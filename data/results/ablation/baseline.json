@@ -1,0 +1,984 @@
+{
+  "system_name": "baseline",
+  "configuration": {
+    "use_jarf": false,
+    "use_cpde": false,
+    "use_esv": false
+  },
+  "retrieval": {
+    "mean_recall_at_1": 0.4772727272727273,
+    "mean_recall_at_3": 0.5,
+    "mean_recall_at_5": 0.6818181818181818,
+    "mean_recall_at_10": 0.75,
+    "distractor_outranked_count": 5,
+    "distractor_outranked_rate": 0.2
+  },
+  "groundedness": {
+    "supported_count": 8,
+    "supported_rate": 0.32,
+    "partially_supported_count": 2,
+    "partially_supported_rate": 0.08,
+    "unsupported_count": 12,
+    "unsupported_rate": 0.48,
+    "contradicted_count": 3,
+    "contradicted_rate": 0.12
+  },
+  "abstention": {
+    "correct_abstention": 0,
+    "overconfident_answer": 3,
+    "false_abstention": 0,
+    "unsupported_answer": 12,
+    "abstention_accuracy": 0.0
+  },
+  "jurisdiction": {
+    "total_jurisdiction_cases": 5,
+    "correct_jurisdiction_cases": 2,
+    "jurisdiction_accuracy": 0.4
+  },
+  "operational": {
+    "mean_latency_ms": 0.5179559998214245,
+    "p90_latency_ms": 0.6216199988557491,
+    "mean_evidence_size": 4.0
+  },
+  "failures": {
+    "total_failures": 20,
+    "failure_rate": 0.8,
+    "root_causes": {
+      "MULTI_HOP_FAILURE": 4,
+      "RETRIEVAL_MISS": 3,
+      "CONFLICT_RESOLUTION_FAILURE": 1,
+      "INSUFFICIENT_EVIDENCE": 1,
+      "GENERATION_HALLUCINATION": 3,
+      "WRONG_EVIDENCE_RANKING": 3,
+      "NEGATION_FAILURE": 1,
+      "OVERCONFIDENT_ANSWER": 3,
+      "JURISDICTION_FAILURE": 1
+    }
+  },
+  "detailed_results": [
+    {
+      "id": "STRESS-001",
+      "category": "A_MULTI_HOP",
+      "jurisdiction": "Default (Delaware)",
+      "question": "If a chronic availability failure occurs under the SLA, what is the required notice period for termination and what refund is owed to Customer?",
+      "required_chunk_ids": [
+        "DOC-008#c004"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-008#c004",
+        "DOC-006#c010",
+        "DOC-006#c007",
+        "DOC-008#c003"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-008#c004",
+        "DOC-006#c010",
+        "DOC-006#c007",
+        "DOC-008#c003",
+        "DOC-008#c002",
+        "DOC-007#c004",
+        "DOC-008#c005",
+        "DOC-006#c008",
+        "DOC-001#c005",
+        "DOC-007#c003"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Chronic Failure and Accelerated Termination Right\n3.1 **Accelerated Termination:** If Monthly Uptime falls below 95.0% in any two (2) consecutive calendar months, Customer may terminate this Agreement immediately upon fifteen (15) calendar days prior written notice, notwithstanding the thirty (30) day notice period specified in Section 9.2 of the Master Agreement (DOC-006) [DOC-008#c004]. 3.2 **Refund on Chronic Termination:** Upon termination pursuant to Section 3.1, Vendor shall issue a pro-rata refund of prepaid fees for the unexpired portion of the term within thirty (30) days [DOC-008#c004]. 9.2 **Termination for Cause:** Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches any material term and fails to cure such breach within thirty (30) calendar days of receiving written notice specifying the breach [DOC-006#c010]. 9.3 **Effect of Termination:** Upon termination, Customer shall cease all use of Services, and each Party shall promptly return or destroy the other's Confidential Information within thirty (30) days, except as required for statutory compliance archives [DOC-006#c010]. 6.2 **Sole Remedy:** For any breach of the warranty in Section 6.1, Customer's exclusive remedy and Vendor's entire liability shall be the re-performance of the non-conforming Service, or, if Vendor cannot reasonably cure within forty-five (45) days of notice, termination of the affected SOW and a pro-rata refund of prepaid unearned fees [DOC-006#c007]. 6.3 **Disclaimer:** EXCEPT AS EXPRESSLY PROVIDED HEREIN, VENDOR DISCLAIMS ALL OTHER WARRANTIES, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT [DOC-006#c007]. 2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003]. Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited [DOC-008#c003].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "SUCCESS",
+      "latency_ms": 0.62689999685972
+    },
+    {
+      "id": "STRESS-002",
+      "category": "A_MULTI_HOP",
+      "jurisdiction": "Default (Delaware)",
+      "question": "What procedure must Customer follow to audit Vendor's data protection compliance, and what document can Vendor provide in satisfaction of that audit?",
+      "required_chunk_ids": [
+        "DOC-007#c007"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c007",
+        "DOC-006#c005",
+        "DOC-007#c005",
+        "DOC-007#c001"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c007",
+        "DOC-006#c005",
+        "DOC-007#c005",
+        "DOC-007#c001",
+        "DOC-006#c008",
+        "DOC-007#c003",
+        "DOC-007#c004",
+        "DOC-006#c007",
+        "DOC-003#c004",
+        "DOC-007#c002"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Audit Rights and Verification\nCustomer may, at its own expense and no more than once per calendar year, audit Vendor's data protection compliance upon thirty (30) days prior written notice; provided that Customer accepts an independent SOC 2 Type II or ISO 27001 audit report in satisfaction of this audit right unless a material security breach occurred in the preceding twelve months [DOC-007#c007]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005]. 4.3 **Objection Procedure:** Customer may object to a new sub-processor on reasonable data protection grounds within ten (10) business days of notice [DOC-007#c005]. Sub-processors and Objection Rights\n4.1 **Authorized Sub-processors:** Customer grants general written authorization for Vendor to engage third-party sub-processors listed on Vendor's public trust portal [DOC-007#c005]. # Data Protection Addendum (DPA)\n**Document ID:** DOC-007\n**Version:** 3.1.0\n**Classification:** Confidential Commercial Contract\n**Domain:** Enterprise Privacy & Data Protection Compliance [DOC-007#c001].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "SUCCESS",
+      "latency_ms": 0.5022999976063147
+    },
+    {
+      "id": "STRESS-003",
+      "category": "B_DISTANT_EVIDENCE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Does the 12-month fee liability cap apply if Vendor breaches its confidentiality obligations regarding Customer Data?",
+      "required_chunk_ids": [
+        "DOC-006#c009",
+        "DOC-006#c010"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c008",
+        "DOC-006#c009",
+        "DOC-006#c006",
+        "DOC-006#c005"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c008",
+        "DOC-006#c009",
+        "DOC-006#c006",
+        "DOC-006#c005",
+        "DOC-009#c004",
+        "DOC-007#c004",
+        "DOC-009#c007",
+        "DOC-006#c007",
+        "DOC-007#c003",
+        "DOC-003#c004"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "distractor_outranked": false,
+      "answer_text": "7.2 **Carveouts from Vendor Indemnity:** Vendor shall have no liability under Section 7.1 to the extent the infringement claim arises from: (i) combinations with non-Vendor software; (ii) modifications made by Customer; or (iii) Customer Data [DOC-006#c008]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. 8.2 **Aggregate Dollar Cap:** SUBJECT TO SECTION 8.3, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT SHALL BE STRICTLY CAPPED AT THE TOTAL FEES PAID OR PAYABLE BY CUSTOMER IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO LIABILITY [DOC-006#c009]. 8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009]. Confidentiality Obligations and Carveouts\n5.1 **Duty of Care:** The receiving Party shall protect disclosing Party's Confidential Information with the same degree of care it uses for its own confidential information, but in no event less than a reasonable degree of care [DOC-006#c006]. 5.2 **Exceptions to Use:** Neither Party shall disclose the other's Confidential Information to any third party except to its Affiliates, legal counsel, and audited contractors who need to know such information and are bound by confidentiality obligations at least as restrictive as this Section 5 [DOC-006#c006]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "MULTI_HOP_FAILURE",
+      "latency_ms": 0.5087999998067971
+    },
+    {
+      "id": "STRESS-004",
+      "category": "B_DISTANT_EVIDENCE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "If Customer terminates for cause due to an uncured material breach, how many days do the parties have to return or destroy Confidential Information, and what is the exception?",
+      "required_chunk_ids": [
+        "DOC-006#c011"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c002",
+        "DOC-006#c010",
+        "DOC-006#c006",
+        "DOC-009#c007"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c002",
+        "DOC-006#c010",
+        "DOC-006#c006",
+        "DOC-009#c007",
+        "DOC-008#c003",
+        "DOC-009#c006",
+        "DOC-006#c005",
+        "DOC-007#c004",
+        "DOC-006#c007",
+        "DOC-007#c007"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "distractor_outranked": false,
+      "answer_text": "- **\"Confidential Information\"** means non-public business, technical, or financial information disclosed by one Party to the other; provided that Confidential Information shall explicitly exclude information that: (a) is or becomes publicly known through no breach of this Agreement; (b) was already known to the receiving Party without restriction prior to disclosure; or (c) is independently developed by the receiving Party without access to or use of the disclosing Party's Confidential Information [DOC-006#c002]. - **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics [DOC-006#c002]. 9.3 **Effect of Termination:** Upon termination, Customer shall cease all use of Services, and each Party shall promptly return or destroy the other's Confidential Information within thirty (30) days, except as required for statutory compliance archives [DOC-006#c010]. 9.2 **Termination for Cause:** Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches any material term and fails to cure such breach within thirty (30) calendar days of receiving written notice specifying the breach [DOC-006#c010]. Confidentiality Obligations and Carveouts\n5.1 **Duty of Care:** The receiving Party shall protect disclosing Party's Confidential Information with the same degree of care it uses for its own confidential information, but in no event less than a reasonable degree of care [DOC-006#c006]. 5.2 **Exceptions to Use:** Neither Party shall disclose the other's Confidential Information to any third party except to its Affiliates, legal counsel, and audited contractors who need to know such information and are bound by confidentiality obligations at least as restrictive as this Section 5 [DOC-006#c006]. Schedule SG: Republic of Singapore\nWhen Singapore is the selected Chosen Jurisdiction:\n6.1 **PDPA Breach Notification:** Under the Singapore Personal Data Protection Act 2012 (PDPA), notification of a notifiable data breach to the Personal Data Protection Commission (PDPC) must occur no later than three (3) calendar days after assessing that the breach is notifiable [DOC-009#c007]. 53B) shall apply, and no third party shall have rights to enforce any term of this Agreement unless expressly provided [DOC-009#c007].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "RETRIEVAL_MISS",
+      "latency_ms": 0.6049000003258698
+    },
+    {
+      "id": "STRESS-005",
+      "category": "C_SIMILAR_BUT_WRONG",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Is Vendor obligated to defend Customer against patent infringement claims that arise from Customer's own modifications to the software?",
+      "required_chunk_ids": [
+        "DOC-006#c008"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-008#c005",
+        "DOC-007#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-008#c005",
+        "DOC-007#c004",
+        "DOC-006#c004",
+        "DOC-006#c007",
+        "DOC-007#c003",
+        "DOC-006#c002",
+        "DOC-007#c007",
+        "DOC-008#c003"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "7.2 **Carveouts from Vendor Indemnity:** Vendor shall have no liability under Section 7.1 to the extent the infringement claim arises from: (i) combinations with non-Vendor software; (ii) modifications made by Customer; or (iii) Customer Data [DOC-006#c008]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. 4.2 **Vendor Platform IP:** Vendor retains all right, title, and interest in and to the Service, underlying algorithms, documentation, and all improvements and modifications thereto [DOC-006#c005]. - Customer's unauthorized software modifications or misconfigured edge gateway payloads [DOC-008#c005]. Maintenance Exclusions\nThe following events are excluded from Downtime calculations:\n- Planned maintenance windows conducted between 02:00 and 06:00 UTC on Sundays, provided Vendor gave at least five (5) business days prior written notice [DOC-008#c005]. 3.3 **Regulatory Reporting Timelines:** Customer acknowledges that reporting obligations to regulatory authorities (such as the EU 72-hour notice under GDPR Article 33 or relevant state attorneys general under CCPA) remain the legal responsibility of Customer as Controller, assisted by Vendor's incident report [DOC-007#c004]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "SUCCESS",
+      "latency_ms": 0.523599999723956
+    },
+    {
+      "id": "STRESS-006",
+      "category": "C_SIMILAR_BUT_WRONG",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Can Customer claim a service credit for downtime that occurred during Sunday scheduled maintenance between 02:00 and 06:00 UTC?",
+      "required_chunk_ids": [
+        "DOC-008#c005"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-008#c005",
+        "DOC-008#c003",
+        "DOC-006#c008",
+        "DOC-006#c005"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-008#c005",
+        "DOC-008#c003",
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-006#c002",
+        "DOC-006#c007",
+        "DOC-007#c007",
+        "DOC-007#c004",
+        "DOC-007#c003",
+        "DOC-003#c004"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Maintenance Exclusions\nThe following events are excluded from Downtime calculations:\n- Planned maintenance windows conducted between 02:00 and 06:00 UTC on Sundays, provided Vendor gave at least five (5) business days prior written notice [DOC-008#c005]. 2.2 **Claim Procedure:** Customer must submit a service credit claim within thirty (30) days following the end of the month in which downtime occurred [DOC-008#c003]. 2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. 7.2 **Carveouts from Vendor Indemnity:** Vendor shall have no liability under Section 7.1 to the extent the infringement claim arises from: (i) combinations with non-Vendor software; (ii) modifications made by Customer; or (iii) Customer Data [DOC-006#c008]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "SUCCESS",
+      "latency_ms": 0.5018000010750256
+    },
+    {
+      "id": "STRESS-007",
+      "category": "D_CONFLICTING_PROVISIONS",
+      "jurisdiction": "Default (Delaware)",
+      "question": "If there is an explicit conflict between the Master Services Agreement (DOC-006) and the Data Protection Addendum (DOC-007) regarding security breach notification, which document controls?",
+      "required_chunk_ids": [
+        "DOC-007#c002"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c004",
+        "DOC-006#c003",
+        "DOC-007#c001",
+        "DOC-007#c002"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c004",
+        "DOC-006#c003",
+        "DOC-007#c001",
+        "DOC-007#c002",
+        "DOC-006#c002",
+        "DOC-007#c003",
+        "DOC-009#c007",
+        "DOC-006#c001",
+        "DOC-009#c002",
+        "DOC-007#c007"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": true,
+      "answer_text": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit [DOC-007#c004]. In the event of an explicit conflict between this Agreement and any SOW, the terms of this Agreement shall govern unless the SOW explicitly identifies the specific section of this Agreement to be overridden and is signed by an executive officer of both Parties [DOC-006#c003]. Services, Provisioning, and SOWs\nVendor shall provide the cloud software services described in mutually executed Statements of Work (SOW) [DOC-006#c003]. # Data Protection Addendum (DPA)\n**Document ID:** DOC-007\n**Version:** 3.1.0\n**Classification:** Confidential Commercial Contract\n**Domain:** Enterprise Privacy & Data Protection Compliance [DOC-007#c001]. Scope, Status, and Order of Precedence\nThis Data Protection Addendum (\"DPA\") supplements the Master Services Agreement (DOC-006) [DOC-007#c002]. In the event of any conflict or inconsistency between the terms of this DPA and the Agreement (DOC-006), the terms of this DPA shall prevail with respect to data privacy and security of Personal Data [DOC-007#c002].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "CONFLICT_RESOLUTION_FAILURE",
+      "latency_ms": 0.5524999978661072
+    },
+    {
+      "id": "STRESS-008",
+      "category": "D_CONFLICTING_PROVISIONS",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Does Customer have thirty days or fifteen days written notice to terminate the Agreement if uptime falls below 95% for two consecutive months?",
+      "required_chunk_ids": [
+        "DOC-008#c004"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-008#c004",
+        "DOC-006#c010",
+        "DOC-008#c005",
+        "DOC-008#c003"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-008#c004",
+        "DOC-006#c010",
+        "DOC-008#c005",
+        "DOC-008#c003",
+        "DOC-007#c005",
+        "DOC-006#c007",
+        "DOC-008#c002",
+        "DOC-006#c008",
+        "DOC-006#c006",
+        "DOC-006#c004"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Chronic Failure and Accelerated Termination Right\n3.1 **Accelerated Termination:** If Monthly Uptime falls below 95.0% in any two (2) consecutive calendar months, Customer may terminate this Agreement immediately upon fifteen (15) calendar days prior written notice, notwithstanding the thirty (30) day notice period specified in Section 9.2 of the Master Agreement (DOC-006) [DOC-008#c004]. 3.2 **Refund on Chronic Termination:** Upon termination pursuant to Section 3.1, Vendor shall issue a pro-rata refund of prepaid fees for the unexpired portion of the term within thirty (30) days [DOC-008#c004]. 9.2 **Termination for Cause:** Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches any material term and fails to cure such breach within thirty (30) calendar days of receiving written notice specifying the breach [DOC-006#c010]. 9.3 **Effect of Termination:** Upon termination, Customer shall cease all use of Services, and each Party shall promptly return or destroy the other's Confidential Information within thirty (30) days, except as required for statutory compliance archives [DOC-006#c010]. Maintenance Exclusions\nThe following events are excluded from Downtime calculations:\n- Planned maintenance windows conducted between 02:00 and 06:00 UTC on Sundays, provided Vendor gave at least five (5) business days prior written notice [DOC-008#c005]. - Customer's unauthorized software modifications or misconfigured edge gateway payloads [DOC-008#c005]. Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited [DOC-008#c003]. 2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003].",
+      "is_abstention": false,
+      "groundedness_tier": "PARTIALLY_SUPPORTED",
+      "root_cause": "INSUFFICIENT_EVIDENCE",
+      "latency_ms": 0.49959999887505546
+    },
+    {
+      "id": "STRESS-009",
+      "category": "E_DEFINITION_DEPENDENCY",
+      "jurisdiction": "Default (Delaware)",
+      "question": "If Vendor develops a competing telemetry algorithm completely independently without any access to Customer's disclosures, does that algorithm constitute Customer's Confidential Information?",
+      "required_chunk_ids": [
+        "DOC-006#c002"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c002",
+        "DOC-006#c005",
+        "DOC-006#c006",
+        "DOC-006#c008"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c002",
+        "DOC-006#c005",
+        "DOC-006#c006",
+        "DOC-006#c008",
+        "DOC-007#c004",
+        "DOC-007#c005",
+        "DOC-006#c011",
+        "DOC-008#c005",
+        "DOC-006#c010",
+        "DOC-008#c003"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "- **\"Confidential Information\"** means non-public business, technical, or financial information disclosed by one Party to the other; provided that Confidential Information shall explicitly exclude information that: (a) is or becomes publicly known through no breach of this Agreement; (b) was already known to the receiving Party without restriction prior to disclosure; or (c) is independently developed by the receiving Party without access to or use of the disclosing Party's Confidential Information [DOC-006#c002]. Definitions\nAs used in this Agreement:\n- **\"Affiliate\"** means any entity that directly or indirectly controls, is controlled by, or is under common control with a Party, where control means ownership of more than 50% of voting securities [DOC-006#c002]. 4.3 **Feedback License:** If Customer provides feedback or feature requests, Vendor may freely incorporate such feedback without accounting or payment to Customer [DOC-006#c005]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. 5.2 **Exceptions to Use:** Neither Party shall disclose the other's Confidential Information to any third party except to its Affiliates, legal counsel, and audited contractors who need to know such information and are bound by confidentiality obligations at least as restrictive as this Section 5 [DOC-006#c006]. 5.3 **Compelled Disclosure:** A Party may disclose Confidential Information to the extent required by valid court order or administrative summons; provided that the receiving Party gives prompt written notice (unless legally prohibited) to enable the disclosing Party to seek a protective order [DOC-006#c006]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. 7.2 **Carveouts from Vendor Indemnity:** Vendor shall have no liability under Section 7.1 to the extent the infringement claim arises from: (i) combinations with non-Vendor software; (ii) modifications made by Customer; or (iii) Customer Data [DOC-006#c008].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "GENERATION_HALLUCINATION",
+      "latency_ms": 0.6412000002455898
+    },
+    {
+      "id": "STRESS-010",
+      "category": "E_DEFINITION_DEPENDENCY",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Does Customer's aggregate liability cap of 12 months fees apply if Customer commits an act of Gross Negligence?",
+      "required_chunk_ids": [
+        "DOC-006#c010",
+        "DOC-006#c002"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c009",
+        "DOC-006#c004",
+        "DOC-006#c008",
+        "DOC-006#c007"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c009",
+        "DOC-006#c004",
+        "DOC-006#c008",
+        "DOC-006#c007",
+        "DOC-006#c005",
+        "DOC-009#c005",
+        "DOC-009#c007",
+        "DOC-006#c002",
+        "DOC-007#c007",
+        "DOC-007#c004"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.5,
+      "distractor_outranked": true,
+      "answer_text": "8.2 **Aggregate Dollar Cap:** SUBJECT TO SECTION 8.3, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT SHALL BE STRICTLY CAPPED AT THE TOTAL FEES PAID OR PAYABLE BY CUSTOMER IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO LIABILITY [DOC-006#c009]. 8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009]. Fees, Invoicing, and Taxes\nCustomer shall pay all undisputed fees within thirty (30) calendar days of invoice receipt [DOC-006#c004]. Customer is solely responsible for all sales, value-added, and consumption taxes, excluding taxes based solely on Vendor's net income [DOC-006#c004]. 7.3 **Customer Indemnity:** Customer shall defend and indemnify Vendor against third-party claims arising from Customer Data or Customer's violation of Applicable Law [DOC-006#c008]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. 6.2 **Sole Remedy:** For any breach of the warranty in Section 6.1, Customer's exclusive remedy and Vendor's entire liability shall be the re-performance of the non-conforming Service, or, if Vendor cannot reasonably cure within forty-five (45) days of notice, termination of the affected SOW and a pro-rata refund of prepaid unearned fees [DOC-006#c007].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "WRONG_EVIDENCE_RANKING",
+      "latency_ms": 0.46740000107092783
+    },
+    {
+      "id": "STRESS-011",
+      "category": "F_NEGATION_EXCEPTION",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Can Vendor hire a third-party sub-processor without providing prior notice to Customer?",
+      "required_chunk_ids": [
+        "DOC-007#c005"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c005",
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-008#c005"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c005",
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-008#c005",
+        "DOC-007#c004",
+        "DOC-007#c003",
+        "DOC-006#c007",
+        "DOC-007#c007",
+        "DOC-006#c002",
+        "DOC-008#c004"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Sub-processors and Objection Rights\n4.1 **Authorized Sub-processors:** Customer grants general written authorization for Vendor to engage third-party sub-processors listed on Vendor's public trust portal [DOC-007#c005]. 4.3 **Objection Procedure:** Customer may object to a new sub-processor on reasonable data protection grounds within ten (10) business days of notice [DOC-007#c005]. Indemnification Obligations\n7.1 **Vendor IP Indemnity:** Vendor shall defend Customer against any third-party claim alleging that the Services directly infringe a valid copyright or registered patent of the Chosen Jurisdiction, and shall indemnify Customer against final damages awarded by a competent court; provided that Customer: (a) gives Vendor prompt written notice; (b) grants Vendor sole control of defense and settlement; and (c) provides reasonable cooperation [DOC-006#c008]. 7.3 **Customer Indemnity:** Customer shall defend and indemnify Vendor against third-party claims arising from Customer Data or Customer's violation of Applicable Law [DOC-006#c008]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. 4.3 **Feedback License:** If Customer provides feedback or feature requests, Vendor may freely incorporate such feedback without accounting or payment to Customer [DOC-006#c005]. Maintenance Exclusions\nThe following events are excluded from Downtime calculations:\n- Planned maintenance windows conducted between 02:00 and 06:00 UTC on Sundays, provided Vendor gave at least five (5) business days prior written notice [DOC-008#c005].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "NEGATION_FAILURE",
+      "latency_ms": 0.43060000098193996
+    },
+    {
+      "id": "STRESS-012",
+      "category": "F_NEGATION_EXCEPTION",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Are lost profits and consequential damages barred under all circumstances under the Agreement?",
+      "required_chunk_ids": [
+        "DOC-006#c009",
+        "DOC-006#c010"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c009",
+        "DOC-006#c003",
+        "DOC-009#c005",
+        "DOC-009#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c009",
+        "DOC-006#c003",
+        "DOC-009#c005",
+        "DOC-009#c004",
+        "DOC-006#c011",
+        "DOC-006#c002",
+        "DOC-008#c001",
+        "DOC-007#c002",
+        "DOC-006#c001",
+        "DOC-006#c006"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "distractor_outranked": false,
+      "answer_text": "Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. 8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009]. In the event of an explicit conflict between this Agreement and any SOW, the terms of this Agreement shall govern unless the SOW explicitly identifies the specific section of this Agreement to be overridden and is signed by an executive officer of both Parties [DOC-006#c003]. Services, Provisioning, and SOWs\nVendor shall provide the cloud software services described in mutually executed Statements of Work (SOW) [DOC-006#c003]. 4.2 **Penalty Doctrine:** Any service credits or liquidated damages under DOC-008 must constitute a proportionate and legitimate business interest under the Supreme Court rule in *Cavendish Square Holding BV v Talal El Makdessi* and shall not constitute an unenforceable penalty [DOC-009#c005]. All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA [DOC-009#c005]. 3.3 **Liability Caps and Consequential Damages:** Section 8.1 (Consequential Damages Waiver) and Section 8.2 (12-month Fee Cap) are enforceable to the maximum extent permitted by law, with exceptions limited exclusively to actual intentional fraud pursuant to Section 8.3 [DOC-009#c004]. 3.2 **Enforceability of Restrictive Covenants:** Section 10 (Non-Solicitation) is fully valid and enforceable as a reasonable commercial covenant under Delaware law [DOC-009#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "MULTI_HOP_FAILURE",
+      "latency_ms": 0.43989999903715216
+    },
+    {
+      "id": "STRESS-013",
+      "category": "G_UNANSWERABLE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "What liquidated damages must Vendor pay if software source code is not deposited into an escrow account within sixty days?",
+      "required_chunk_ids": [],
+      "retrieved_chunk_ids_top4": [
+        "DOC-009#c005",
+        "DOC-006#c007",
+        "DOC-008#c003",
+        "DOC-008#c005"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-009#c005",
+        "DOC-006#c007",
+        "DOC-008#c003",
+        "DOC-008#c005",
+        "DOC-007#c004",
+        "DOC-006#c004",
+        "DOC-009#c004",
+        "DOC-006#c003",
+        "DOC-002#c003",
+        "DOC-006#c009"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "4.2 **Penalty Doctrine:** Any service credits or liquidated damages under DOC-008 must constitute a proportionate and legitimate business interest under the Supreme Court rule in *Cavendish Square Holding BV v Talal El Makdessi* and shall not constitute an unenforceable penalty [DOC-009#c005]. 6.2 **Sole Remedy:** For any breach of the warranty in Section 6.1, Customer's exclusive remedy and Vendor's entire liability shall be the re-performance of the non-conforming Service, or, if Vendor cannot reasonably cure within forty-five (45) days of notice, termination of the affected SOW and a pro-rata refund of prepaid unearned fees [DOC-006#c007]. 2.2 **Claim Procedure:** Customer must submit a service credit claim within thirty (30) days following the end of the month in which downtime occurred [DOC-008#c003]. Failure to submit within 30 days waives the right to credit [DOC-008#c003]. Maintenance Exclusions\nThe following events are excluded from Downtime calculations:\n- Planned maintenance windows conducted between 02:00 and 06:00 UTC on Sundays, provided Vendor gave at least five (5) business days prior written notice [DOC-008#c005].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "OVERCONFIDENT_ANSWER",
+      "latency_ms": 0.4636000012396835
+    },
+    {
+      "id": "STRESS-014",
+      "category": "G_UNANSWERABLE",
+      "jurisdiction": "Japan",
+      "question": "What is the penalty fee if Customer fails to pay the annual invoice within ninety days under the Japanese Commercial Code?",
+      "required_chunk_ids": [],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c004",
+        "DOC-008#c003",
+        "DOC-007#c003",
+        "DOC-009#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c004",
+        "DOC-008#c003",
+        "DOC-007#c003",
+        "DOC-009#c004",
+        "DOC-006#c007",
+        "DOC-006#c010",
+        "DOC-009#c005",
+        "DOC-007#c004",
+        "DOC-002#c003",
+        "DOC-006#c005"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Fees, Invoicing, and Taxes\nCustomer shall pay all undisputed fees within thirty (30) calendar days of invoice receipt [DOC-006#c004]. Customer is solely responsible for all sales, value-added, and consumption taxes, excluding taxes based solely on Vendor's net income [DOC-006#c004]. Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited [DOC-008#c003]. 2.2 **Claim Procedure:** Customer must submit a service credit claim within thirty (30) days following the end of the month in which downtime occurred [DOC-008#c003]. Processing Instructions and Roles\n2.1 **Roles:** Customer acts as the Data Controller (or Business under CCPA/CPRA), and Vendor acts as the Data Processor (or Service Provider under CCPA/CPRA) [DOC-007#c003]. 2.2 **Scope of Processing:** Vendor shall process Personal Data solely on Customer's documented lawful instructions and for the specific business purposes set forth in the Agreement, unless otherwise required by Applicable Law [DOC-007#c003]. Schedule US-DEL: State of Delaware (United States)\nWhen Delaware is the selected Chosen Jurisdiction:\n3.1 **Commercial Freedom of Contract:** Delaware law strictly respects the negotiated allocation of economic risks between sophisticated commercial entities [DOC-009#c004]. 3.2 **Enforceability of Restrictive Covenants:** Section 10 (Non-Solicitation) is fully valid and enforceable as a reasonable commercial covenant under Delaware law [DOC-009#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "OVERCONFIDENT_ANSWER",
+      "latency_ms": 0.45560000216937624
+    },
+    {
+      "id": "STRESS-015",
+      "category": "G_UNANSWERABLE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "What minimum commercial general liability and cyber insurance policy limits is Vendor required to maintain?",
+      "required_chunk_ids": [],
+      "retrieved_chunk_ids_top4": [
+        "DOC-009#c004",
+        "DOC-002#c002",
+        "DOC-007#c004",
+        "DOC-006#c009"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-009#c004",
+        "DOC-002#c002",
+        "DOC-007#c004",
+        "DOC-006#c009",
+        "DOC-006#c007",
+        "DOC-009#c005",
+        "DOC-006#c008",
+        "DOC-009#c003",
+        "DOC-007#c003",
+        "DOC-002#c003"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "3.2 **Enforceability of Restrictive Covenants:** Section 10 (Non-Solicitation) is fully valid and enforceable as a reasonable commercial covenant under Delaware law [DOC-009#c004]. 3.3 **Liability Caps and Consequential Damages:** Section 8.1 (Consequential Damages Waiver) and Section 8.2 (12-month Fee Cap) are enforceable to the maximum extent permitted by law, with exceptions limited exclusively to actual intentional fraud pursuant to Section 8.3 [DOC-009#c004]. - **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions [DOC-002#c002]. Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. 3.3 **Regulatory Reporting Timelines:** Customer acknowledges that reporting obligations to regulatory authorities (such as the EU 72-hour notice under GDPR Article 33 or relevant state attorneys general under CCPA) remain the legal responsibility of Customer as Controller, assisted by Vendor's incident report [DOC-007#c004]. Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. 8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "OVERCONFIDENT_ANSWER",
+      "latency_ms": 0.4765999983646907
+    },
+    {
+      "id": "STRESS-016",
+      "category": "H_ADVERSARIAL_PREMISE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Given that Section 8 eliminates all liability for intentional fraud and theft of intellectual property, how can Customer recover losses?",
+      "required_chunk_ids": [
+        "DOC-006#c010"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c009",
+        "DOC-006#c005",
+        "DOC-006#c002",
+        "DOC-009#c005"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c009",
+        "DOC-006#c005",
+        "DOC-006#c002",
+        "DOC-009#c005",
+        "DOC-009#c004",
+        "DOC-006#c008",
+        "DOC-006#c007",
+        "DOC-006#c011",
+        "DOC-007#c004",
+        "DOC-009#c003"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "distractor_outranked": false,
+      "answer_text": "8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009]. Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. - **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics [DOC-006#c002]. - **\"Gross Negligence\"** means an intentional, conscious, or reckless failure to perform a manifest duty in reckless disregard of the consequences as affecting the life, property, or core rights of another person [DOC-006#c002]. All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA [DOC-009#c005]. Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Unfair Contract Terms Act 1977 (UCTA):** Any provision attempting to exclude or restrict liability for death or personal injury resulting from negligence is void [DOC-009#c005].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "RETRIEVAL_MISS",
+      "latency_ms": 0.5369999998947605
+    },
+    {
+      "id": "STRESS-017",
+      "category": "H_ADVERSARIAL_PREMISE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Under Section 3.2 of the DPA, why is Vendor permitted to delay notifying Customer of a personal data breach for up to thirty days?",
+      "required_chunk_ids": [
+        "DOC-007#c004"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c004",
+        "DOC-007#c003",
+        "DOC-009#c007",
+        "DOC-006#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c004",
+        "DOC-007#c003",
+        "DOC-009#c007",
+        "DOC-006#c004",
+        "DOC-009#c006",
+        "DOC-006#c005",
+        "DOC-007#c007",
+        "DOC-006#c008",
+        "DOC-007#c002",
+        "DOC-008#c003"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. 3.3 **Regulatory Reporting Timelines:** Customer acknowledges that reporting obligations to regulatory authorities (such as the EU 72-hour notice under GDPR Article 33 or relevant state attorneys general under CCPA) remain the legal responsibility of Customer as Controller, assisted by Vendor's incident report [DOC-007#c004]. 2.2 **Scope of Processing:** Vendor shall process Personal Data solely on Customer's documented lawful instructions and for the specific business purposes set forth in the Agreement, unless otherwise required by Applicable Law [DOC-007#c003]. 2.3 **Prohibition on Sale or Sharing:** Vendor shall not sell, retain, use, disclose, or rent Personal Data for any commercial purpose other than the direct provisioning of the Services [DOC-007#c003]. Schedule SG: Republic of Singapore\nWhen Singapore is the selected Chosen Jurisdiction:\n6.1 **PDPA Breach Notification:** Under the Singapore Personal Data Protection Act 2012 (PDPA), notification of a notifiable data breach to the Personal Data Protection Commission (PDPC) must occur no later than three (3) calendar days after assessing that the breach is notifiable [DOC-009#c007]. 6.2 **Third Party Rights:** The Contracts (Rights of Third Parties) Act 2001 (Cap [DOC-009#c007]. Fees, Invoicing, and Taxes\nCustomer shall pay all undisputed fees within thirty (30) calendar days of invoice receipt [DOC-006#c004]. Customer is solely responsible for all sales, value-added, and consumption taxes, excluding taxes based solely on Vendor's net income [DOC-006#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "GENERATION_HALLUCINATION",
+      "latency_ms": 0.44830000115325674
+    },
+    {
+      "id": "STRESS-018",
+      "category": "H_ADVERSARIAL_PREMISE",
+      "jurisdiction": "Default (Delaware)",
+      "question": "Confirm that Customer is entitled to immediate cash wire refunds rather than service credits for all minor latency spikes under Section 2 of the SLA.",
+      "required_chunk_ids": [
+        "DOC-008#c003"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-008#c003",
+        "DOC-006#c007",
+        "DOC-006#c005",
+        "DOC-006#c002"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-008#c003",
+        "DOC-006#c007",
+        "DOC-006#c005",
+        "DOC-006#c002",
+        "DOC-009#c005",
+        "DOC-003#c004",
+        "DOC-005#c002",
+        "DOC-006#c009",
+        "DOC-007#c003",
+        "DOC-006#c008"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003]. Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited [DOC-008#c003]. 6.2 **Sole Remedy:** For any breach of the warranty in Section 6.1, Customer's exclusive remedy and Vendor's entire liability shall be the re-performance of the non-conforming Service, or, if Vendor cannot reasonably cure within forty-five (45) days of notice, termination of the affected SOW and a pro-rata refund of prepaid unearned fees [DOC-006#c007]. Warranties and Sole Remedies\n6.1 **Service Warranty:** Vendor warrants that the Services will perform substantially in conformance with the published documentation during the active subscription term [DOC-006#c007]. 4.2 **Vendor Platform IP:** Vendor retains all right, title, and interest in and to the Service, underlying algorithms, documentation, and all improvements and modifications thereto [DOC-006#c005]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005]. - **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics [DOC-006#c002]. Definitions\nAs used in this Agreement:\n- **\"Affiliate\"** means any entity that directly or indirectly controls, is controlled by, or is under common control with a Party, where control means ownership of more than 50% of voting securities [DOC-006#c002].",
+      "is_abstention": false,
+      "groundedness_tier": "UNSUPPORTED",
+      "root_cause": "GENERATION_HALLUCINATION",
+      "latency_ms": 0.5177999992156401
+    },
+    {
+      "id": "STRESS-019",
+      "category": "I_CROSS_DOCUMENT",
+      "jurisdiction": "European Union (GDPR)",
+      "question": "When Personal Data of European citizens is transferred across borders, which standard contractual clauses apply, and does the Master Agreement liability cap limit data subject claims under those transfers?",
+      "required_chunk_ids": [
+        "DOC-007#c006",
+        "DOC-009#c005"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c006",
+        "DOC-007#c002",
+        "DOC-009#c006",
+        "DOC-006#c009"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c006",
+        "DOC-007#c002",
+        "DOC-009#c006",
+        "DOC-006#c009",
+        "DOC-009#c007",
+        "DOC-006#c002",
+        "DOC-007#c004",
+        "DOC-006#c005",
+        "DOC-006#c008",
+        "DOC-007#c003"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "distractor_outranked": false,
+      "answer_text": "Cross-Border Transfers and Transfer Mechanisms\n5.1 **Restricted Transfers:** Transfers of Personal Data from the European Economic Area (EEA), Switzerland, or United Kingdom to countries not deemed adequate by the European Commission shall be governed by the standard contractual clauses (SCCs) set out in Module 2 (Controller-to-Processor) of Commission Implementing Decision (EU) 2021/914 [DOC-007#c006]. 5.2 **UK Addendum:** For transfers originating from the UK, the UK International Data Transfer Addendum (IDTA) shall be incorporated by reference [DOC-007#c006]. Scope, Status, and Order of Precedence\nThis Data Protection Addendum (\"DPA\") supplements the Master Services Agreement (DOC-006) [DOC-007#c002]. In the event of any conflict or inconsistency between the terms of this DPA and the Agreement (DOC-006), the terms of this DPA shall prevail with respect to data privacy and security of Personal Data [DOC-007#c002]. Schedule EU-GDPR: European Union Member States\nWhen an EU Member State jurisdiction is selected:\n5.1 **Non-Waivable Statutory Liability:** Under GDPR Article 82, statutory rights of data subjects to claim compensation for material or non-material damage cannot be capped or excluded by Section 8 of the Master Agreement [DOC-009#c006]. 5.2 **Supervisory Authority Reporting:** In the event of a Personal Data breach, Customer must notify the relevant supervisory authority without undue delay and, where feasible, not later than 72 hours after having become aware of it pursuant to GDPR Article 33 [DOC-009#c006]. Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. 8.2 **Aggregate Dollar Cap:** SUBJECT TO SECTION 8.3, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT SHALL BE STRICTLY CAPPED AT THE TOTAL FEES PAID OR PAYABLE BY CUSTOMER IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO LIABILITY [DOC-006#c009].",
+      "is_abstention": false,
+      "groundedness_tier": "CONTRADICTED",
+      "root_cause": "MULTI_HOP_FAILURE",
+      "latency_ms": 0.6137000018497929
+    },
+    {
+      "id": "STRESS-020",
+      "category": "I_CROSS_DOCUMENT",
+      "jurisdiction": "European Union (GDPR)",
+      "question": "If a security breach occurs impacting European telemetry, within what timeframe must Vendor notify Customer, and within what timeframe must Customer notify the supervisory authority?",
+      "required_chunk_ids": [
+        "DOC-007#c004",
+        "DOC-009#c005"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-007#c004",
+        "DOC-009#c006",
+        "DOC-008#c003",
+        "DOC-006#c007"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-007#c004",
+        "DOC-009#c006",
+        "DOC-008#c003",
+        "DOC-006#c007",
+        "DOC-007#c007",
+        "DOC-006#c008",
+        "DOC-006#c005",
+        "DOC-007#c005",
+        "DOC-003#c004",
+        "DOC-006#c004"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "recall_at_10": 0.5,
+      "distractor_outranked": false,
+      "answer_text": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit [DOC-007#c004]. 5.2 **Supervisory Authority Reporting:** In the event of a Personal Data breach, Customer must notify the relevant supervisory authority without undue delay and, where feasible, not later than 72 hours after having become aware of it pursuant to GDPR Article 33 [DOC-009#c006]. Schedule EU-GDPR: European Union Member States\nWhen an EU Member State jurisdiction is selected:\n5.1 **Non-Waivable Statutory Liability:** Under GDPR Article 82, statutory rights of data subjects to claim compensation for material or non-material damage cannot be capped or excluded by Section 8 of the Master Agreement [DOC-009#c006]. 2.2 **Claim Procedure:** Customer must submit a service credit claim within thirty (30) days following the end of the month in which downtime occurred [DOC-008#c003]. 2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003]. 6.2 **Sole Remedy:** For any breach of the warranty in Section 6.1, Customer's exclusive remedy and Vendor's entire liability shall be the re-performance of the non-conforming Service, or, if Vendor cannot reasonably cure within forty-five (45) days of notice, termination of the affected SOW and a pro-rata refund of prepaid unearned fees [DOC-006#c007]. Warranties and Sole Remedies\n6.1 **Service Warranty:** Vendor warrants that the Services will perform substantially in conformance with the published documentation during the active subscription term [DOC-006#c007].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "MULTI_HOP_FAILURE",
+      "latency_ms": 0.6821999995736405
+    },
+    {
+      "id": "STRESS-021",
+      "category": "J_JURISDICTION_SENSITIVE",
+      "jurisdiction": "United States (California)",
+      "question": "Is the employee non-solicitation clause in Section 10 legally enforceable against California-based technical personnel?",
+      "required_chunk_ids": [
+        "DOC-009#c002"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-009#c004",
+        "DOC-006#c011",
+        "DOC-009#c003",
+        "DOC-006#c002"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-009#c004",
+        "DOC-006#c011",
+        "DOC-009#c003",
+        "DOC-006#c002",
+        "DOC-007#c004",
+        "DOC-009#c005",
+        "DOC-006#c006",
+        "DOC-009#c002",
+        "DOC-006#c009",
+        "DOC-001#c003"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": true,
+      "answer_text": "3.2 **Enforceability of Restrictive Covenants:** Section 10 (Non-Solicitation) is fully valid and enforceable as a reasonable commercial covenant under Delaware law [DOC-009#c004]. 3.3 **Liability Caps and Consequential Damages:** Section 8.1 (Consequential Damages Waiver) and Section 8.2 (12-month Fee Cap) are enforceable to the maximum extent permitted by law, with exceptions limited exclusively to actual intentional fraud pursuant to Section 8.3 [DOC-009#c004]. Restrictive Covenants and Non-Solicitation\nDuring the term of this Agreement and for twelve (12) months thereafter, Customer shall not directly or indirectly solicit, recruit, or hire any employee or core technical contractor of Vendor who performed services under this Agreement; provided that general public job advertisements not targeted at Vendor personnel shall not constitute a breach of this Section 10 [DOC-006#c011]. Schedule US-CAL: State of California (United States)\nWhen California is the selected Chosen Jurisdiction:\n2.1 **Voidness of Restrictive Covenants:** Pursuant to California Business and Professions Code \u00a7 16600 and related judicial precedents, Section 10 of the Master Agreement (Non-Solicitation and Restrictive Covenants) is declared strictly void, unenforceable, and contrary to California public policy with respect to all California-based personnel and contractors [DOC-009#c003]. - **\"Confidential Information\"** means non-public business, technical, or financial information disclosed by one Party to the other; provided that Confidential Information shall explicitly exclude information that: (a) is or becomes publicly known through no breach of this Agreement; (b) was already known to the receiving Party without restriction prior to disclosure; or (c) is independently developed by the receiving Party without access to or use of the disclosing Party's Confidential Information [DOC-006#c002]. Definitions\nAs used in this Agreement:\n- **\"Affiliate\"** means any entity that directly or indirectly controls, is controlled by, or is under common control with a Party, where control means ownership of more than 50% of voting securities [DOC-006#c002].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "WRONG_EVIDENCE_RANKING",
+      "latency_ms": 0.5127000003994908
+    },
+    {
+      "id": "STRESS-022",
+      "category": "J_JURISDICTION_SENSITIVE",
+      "jurisdiction": "United States (Delaware)",
+      "question": "Is the employee non-solicitation clause in Section 10 legally enforceable against technical personnel under the contract?",
+      "required_chunk_ids": [
+        "DOC-009#c003"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c011",
+        "DOC-009#c004",
+        "DOC-009#c005",
+        "DOC-009#c003"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c011",
+        "DOC-009#c004",
+        "DOC-009#c005",
+        "DOC-009#c003",
+        "DOC-007#c004",
+        "DOC-006#c002",
+        "DOC-006#c006",
+        "DOC-006#c009",
+        "DOC-009#c006",
+        "DOC-001#c003"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": false,
+      "answer_text": "Restrictive Covenants and Non-Solicitation\nDuring the term of this Agreement and for twelve (12) months thereafter, Customer shall not directly or indirectly solicit, recruit, or hire any employee or core technical contractor of Vendor who performed services under this Agreement; provided that general public job advertisements not targeted at Vendor personnel shall not constitute a breach of this Section 10 [DOC-006#c011]. 3.2 **Enforceability of Restrictive Covenants:** Section 10 (Non-Solicitation) is fully valid and enforceable as a reasonable commercial covenant under Delaware law [DOC-009#c004]. Schedule US-DEL: State of Delaware (United States)\nWhen Delaware is the selected Chosen Jurisdiction:\n3.1 **Commercial Freedom of Contract:** Delaware law strictly respects the negotiated allocation of economic risks between sophisticated commercial entities [DOC-009#c004]. All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA [DOC-009#c005]. Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Unfair Contract Terms Act 1977 (UCTA):** Any provision attempting to exclude or restrict liability for death or personal injury resulting from negligence is void [DOC-009#c005]. Schedule US-CAL: State of California (United States)\nWhen California is the selected Chosen Jurisdiction:\n2.1 **Voidness of Restrictive Covenants:** Pursuant to California Business and Professions Code \u00a7 16600 and related judicial precedents, Section 10 of the Master Agreement (Non-Solicitation and Restrictive Covenants) is declared strictly void, unenforceable, and contrary to California public policy with respect to all California-based personnel and contractors [DOC-009#c003].",
+      "is_abstention": false,
+      "groundedness_tier": "SUPPORTED",
+      "root_cause": "SUCCESS",
+      "latency_ms": 0.4608999988704454
+    },
+    {
+      "id": "STRESS-023",
+      "category": "J_JURISDICTION_SENSITIVE",
+      "jurisdiction": "United Kingdom (England and Wales)",
+      "question": "Can Vendor contractually exclude all liability for death or personal injury resulting from negligence under the contract?",
+      "required_chunk_ids": [
+        "DOC-009#c004"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-009#c005",
+        "DOC-006#c009",
+        "DOC-006#c002",
+        "DOC-009#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-009#c005",
+        "DOC-006#c009",
+        "DOC-006#c002",
+        "DOC-009#c004",
+        "DOC-009#c006",
+        "DOC-007#c004",
+        "DOC-007#c003",
+        "DOC-009#c003",
+        "DOC-006#c007",
+        "DOC-008#c005"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": true,
+      "answer_text": "Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Unfair Contract Terms Act 1977 (UCTA):** Any provision attempting to exclude or restrict liability for death or personal injury resulting from negligence is void [DOC-009#c005]. All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA [DOC-009#c005]. 8.3 **Express Carveouts from Liability Caps:** THE LIMITATIONS AND EXCLUSIONS IN SECTION 8.1 AND SECTION 8.2 SHALL NOT APPLY TO:\n  (a) EITHER PARTY'S BREACH OF CONFIDENTIALITY OBLIGATIONS UNDER SECTION 5;\n  (b) EITHER PARTY'S INDEMNIFICATION OBLIGATIONS UNDER SECTION 7;\n  (c) EITHER PARTY'S GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR INTENTIONAL FRAUD; OR\n  (d) DAMAGES THAT CANNOT BE CONTRACTUALLY LIMITED UNDER APPLICABLE MANDATORY LAW OF THE CHOSEN JURISDICTION [DOC-006#c009]. Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. - **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics [DOC-006#c002]. - **\"Applicable Law\"** means all local, state, national, and international laws, treaties, regulations, and conventions applicable to the respective Party under the Chosen Jurisdiction [DOC-006#c002]. Schedule US-DEL: State of Delaware (United States)\nWhen Delaware is the selected Chosen Jurisdiction:\n3.1 **Commercial Freedom of Contract:** Delaware law strictly respects the negotiated allocation of economic risks between sophisticated commercial entities [DOC-009#c004]. 3.3 **Liability Caps and Consequential Damages:** Section 8.1 (Consequential Damages Waiver) and Section 8.2 (12-month Fee Cap) are enforceable to the maximum extent permitted by law, with exceptions limited exclusively to actual intentional fraud pursuant to Section 8.3 [DOC-009#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "CONTRADICTED",
+      "root_cause": "JURISDICTION_FAILURE",
+      "latency_ms": 0.5047999984526541
+    },
+    {
+      "id": "STRESS-024",
+      "category": "J_JURISDICTION_SENSITIVE",
+      "jurisdiction": "Singapore",
+      "question": "What is the mandatory statutory deadline for notifying the data protection regulator of a notifiable data breach?",
+      "required_chunk_ids": [
+        "DOC-009#c006"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-009#c007",
+        "DOC-007#c004",
+        "DOC-007#c002",
+        "DOC-007#c007"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-009#c007",
+        "DOC-007#c004",
+        "DOC-007#c002",
+        "DOC-007#c007",
+        "DOC-009#c006",
+        "DOC-007#c001",
+        "DOC-003#c004",
+        "DOC-006#c010",
+        "DOC-007#c003",
+        "DOC-009#c002"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "distractor_outranked": true,
+      "answer_text": "Schedule SG: Republic of Singapore\nWhen Singapore is the selected Chosen Jurisdiction:\n6.1 **PDPA Breach Notification:** Under the Singapore Personal Data Protection Act 2012 (PDPA), notification of a notifiable data breach to the Personal Data Protection Commission (PDPC) must occur no later than three (3) calendar days after assessing that the breach is notifiable [DOC-009#c007]. 6.2 **Third Party Rights:** The Contracts (Rights of Third Parties) Act 2001 (Cap [DOC-009#c007]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. 3.3 **Regulatory Reporting Timelines:** Customer acknowledges that reporting obligations to regulatory authorities (such as the EU 72-hour notice under GDPR Article 33 or relevant state attorneys general under CCPA) remain the legal responsibility of Customer as Controller, assisted by Vendor's incident report [DOC-007#c004]. Scope, Status, and Order of Precedence\nThis Data Protection Addendum (\"DPA\") supplements the Master Services Agreement (DOC-006) [DOC-007#c002]. This DPA governs the processing of Personal Data submitted as Customer Data [DOC-007#c002]. Audit Rights and Verification\nCustomer may, at its own expense and no more than once per calendar year, audit Vendor's data protection compliance upon thirty (30) days prior written notice; provided that Customer accepts an independent SOC 2 Type II or ISO 27001 audit report in satisfaction of this audit right unless a material security breach occurred in the preceding twelve months [DOC-007#c007].",
+      "is_abstention": false,
+      "groundedness_tier": "PARTIALLY_SUPPORTED",
+      "root_cause": "WRONG_EVIDENCE_RANKING",
+      "latency_ms": 0.43419999929028563
+    },
+    {
+      "id": "STRESS-025",
+      "category": "J_JURISDICTION_SENSITIVE",
+      "jurisdiction": "European Union (GDPR)",
+      "question": "Can Customer and Vendor agree to cap their liability for data subject compensation claims arising from a data breach at the 12-month contract fees?",
+      "required_chunk_ids": [
+        "DOC-009#c005"
+      ],
+      "retrieved_chunk_ids_top4": [
+        "DOC-006#c008",
+        "DOC-006#c009",
+        "DOC-006#c005",
+        "DOC-007#c004"
+      ],
+      "retrieved_chunk_ids_top10": [
+        "DOC-006#c008",
+        "DOC-006#c009",
+        "DOC-006#c005",
+        "DOC-007#c004",
+        "DOC-009#c007",
+        "DOC-006#c007",
+        "DOC-007#c007",
+        "DOC-009#c004",
+        "DOC-009#c006",
+        "DOC-007#c003"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "recall_at_10": 0.0,
+      "distractor_outranked": false,
+      "answer_text": "7.2 **Carveouts from Vendor Indemnity:** Vendor shall have no liability under Section 7.1 to the extent the infringement claim arises from: (i) combinations with non-Vendor software; (ii) modifications made by Customer; or (iii) Customer Data [DOC-006#c008]. 7.3 **Customer Indemnity:** Customer shall defend and indemnify Vendor against third-party claims arising from Customer Data or Customer's violation of Applicable Law [DOC-006#c008]. 8.2 **Aggregate Dollar Cap:** SUBJECT TO SECTION 8.3, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT SHALL BE STRICTLY CAPPED AT THE TOTAL FEES PAID OR PAYABLE BY CUSTOMER IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO LIABILITY [DOC-006#c009]. Limitation of Liability and Consequential Damages\n8.1 **Consequential Damages Waiver:** SUBJECT TO SECTION 8.3, NEITHER PARTY SHALL BE LIABLE TO THE OTHER FOR ANY INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF REVENUE, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY AND EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES [DOC-006#c009]. Customer grants Vendor a non-exclusive, worldwide, royalty-free license to host, process, and transfer Customer Data solely as necessary to provide the Services [DOC-006#c005]. Intellectual Property & Customer Data Ownership\n4.1 **Customer Ownership:** As between the Parties, Customer retains all right, title, and interest in and to Customer Data [DOC-006#c005]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. 3.3 **Regulatory Reporting Timelines:** Customer acknowledges that reporting obligations to regulatory authorities (such as the EU 72-hour notice under GDPR Article 33 or relevant state attorneys general under CCPA) remain the legal responsibility of Customer as Controller, assisted by Vendor's incident report [DOC-007#c004].",
+      "is_abstention": false,
+      "groundedness_tier": "CONTRADICTED",
+      "root_cause": "RETRIEVAL_MISS",
+      "latency_ms": 0.5420000015874393
+    }
+  ]
+}
