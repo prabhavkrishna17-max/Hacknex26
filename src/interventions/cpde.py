@@ -58,8 +58,8 @@ class ClausePrecedenceExpander:
                         self.clause_index.setdefault((doc_id, top_sec), chunk)
                         self.section_to_chunks.setdefault(top_sec, []).append(chunk)
 
-            # Also scan chunk text for section declarations (e.g. "8.3 Express Carveouts")
-            text_sec_matches = re.findall(r"(?:^|\n|\b)([0-9]+\.[0-9]+)\b", chunk.text)
+            # Also scan chunk text for section declarations (e.g. "8.3 Express Carveouts" or "3.1 **Accelerated Termination:**")
+            text_sec_matches = re.findall(r"(?:^|\n)\s*(?:\*\*)?([0-9]+\.[0-9]+)\b", chunk.text)
             for tm in text_sec_matches:
                 self.clause_index[(doc_id, tm)] = chunk
                 self.section_to_chunks.setdefault(tm, []).append(chunk)
@@ -71,20 +71,23 @@ class ClausePrecedenceExpander:
         if target:
             return target
 
-        # 2. Text or heading match within the same document
+        # 2. Section heading match within the same document
         for dc in self.doc_index.get(current_doc_id, []):
-            if f"Section {sec_clean}" in dc.text or f"{sec_clean} " in dc.section_heading or f"{sec_clean} " in dc.text:
+            if f"{sec_clean} " in dc.section_heading or f"Section {sec_clean}" in dc.section_heading:
                 return dc
 
-        # 3. Match across any other document in the indexed corpus
-        corpus_matches = self.section_to_chunks.get(sec_clean, [])
+        # 3. Match across other documents in the indexed corpus
+        corpus_matches = [c for c in self.section_to_chunks.get(sec_clean, []) if c.doc_id != current_doc_id]
         if corpus_matches:
             return corpus_matches[0]
+        all_matches = self.section_to_chunks.get(sec_clean, [])
+        if all_matches:
+            return all_matches[0]
 
         # 4. Fallback search across all indexed chunks for explicit Section header
         for doc_id, doc_chunks in self.doc_index.items():
             for dc in doc_chunks:
-                if f"Section {sec_clean}" in dc.text or f"Section {sec_clean}" in dc.section_heading:
+                if f"Section {sec_clean}" in dc.section_heading or dc.section_heading.startswith(f"{sec_clean} "):
                     return dc
 
         return None

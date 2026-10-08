@@ -17,7 +17,7 @@ class PrincipledExtractiveGenerator(BaseGenerator):
     domain assumptions, or synthetic answer templates.
     """
 
-    def __init__(self, min_relevance_threshold: float = 0.08):
+    def __init__(self, min_relevance_threshold: float = 0.01):
         self.min_relevance_threshold = min_relevance_threshold
 
     def generate(
@@ -80,7 +80,7 @@ class PrincipledExtractiveGenerator(BaseGenerator):
                 overlap = len(substantive_query.intersection(s_words))
 
                 if substantive_query:
-                    relevance_score = (overlap / len(substantive_query)) * (sc.score or 1.0)
+                    relevance_score = (overlap / len(substantive_query))
                 else:
                     relevance_score = sc.score or 1.0
 

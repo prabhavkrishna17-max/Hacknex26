@@ -63,7 +63,7 @@ def health_check() -> Dict[str, Any]:
         "service": "HNX Legal Intelligence",
         "indexed_documents": len(base_pipeline.documents),
         "indexed_chunks": len(base_pipeline.chunks),
-        "embedder": config.dense_embedder,
+        "embedder": getattr(config, "dense_embedder_type", "dense"),
         "generator": config.generator_type,
     }
 
@@ -75,10 +75,10 @@ def get_documents() -> List[Dict[str, Any]]:
         docs.append({
             "id": doc.doc_id,
             "title": doc.title,
-            "filename": doc.filename,
-            "jurisdiction": doc.jurisdiction,
-            "total_chars": doc.total_chars,
-            "section_count": len(doc.sections),
+            "filename": Path(doc.filepath).name if getattr(doc, "filepath", None) else doc.doc_id,
+            "jurisdiction": doc.metadata.get("jurisdiction", "United States"),
+            "total_chars": len(doc.content) if hasattr(doc, "content") else 0,
+            "section_count": len(doc.metadata.get("sections", [])),
         })
     return docs
 
@@ -111,7 +111,52 @@ def ask_question(req: QueryRequest) -> Dict[str, Any]:
         top_k=req.top_k or 4,
     )
 
-    return answer.model_dump()
+    data = answer.model_dump()
+
+    # Provide rich evidence details and cross-reference relationships for frontend
+    chunk_map = {c.chunk_id: c for c in base_pipeline.chunks}
+    evidence_list = []
+    for cid in answer.retrieved_chunks:
+        if cid in chunk_map:
+            c = chunk_map[cid]
+            evidence_list.append({
+                "chunk_id": c.chunk_id,
+                "doc_id": c.doc_id,
+                "document_title": c.document_title,
+                "section": " > ".join(c.heading_path) if c.heading_path else c.section_heading,
+                "text": c.text,
+                "char_start": c.char_start,
+                "char_end": c.char_end,
+            })
+    data["evidence"] = evidence_list
+
+    # Detect cross-reference relationships (CPDE)
+    expansions = []
+    for cid in answer.retrieved_chunks:
+        chunk = chunk_map.get(cid)
+        if not chunk:
+            continue
+        for pattern, relation in pipeline.cpde.PATTERNS:
+            matches = pattern.findall(chunk.text)
+            for sec_num in matches:
+                sec_clean = sec_num.strip().rstrip(".")
+                target = pipeline.cpde._find_target_chunk(chunk.doc_id, sec_clean)
+                if target:
+                    expansions.append({
+                        "source_chunk_id": chunk.chunk_id,
+                        "source_section": " > ".join(chunk.heading_path) if chunk.heading_path else chunk.section_heading,
+                        "source_doc_title": chunk.document_title,
+                        "target_chunk_id": target.chunk_id,
+                        "target_section": " > ".join(target.heading_path) if target.heading_path else target.section_heading,
+                        "target_doc_title": target.document_title,
+                        "referenced_section": sec_clean,
+                        "relation": relation,
+                        "operator": relation.lower(),
+                        "direction": "override" if relation == "OVERRIDE" else ("definition" if relation == "DEFINITION" else "referenced"),
+                    })
+    data["relationships"] = expansions
+
+    return data
 
 
 if __name__ == "__main__":

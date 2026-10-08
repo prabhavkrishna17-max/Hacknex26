@@ -50,7 +50,7 @@ class JCPARPipeline:
         meta: Dict[str, Any] = {"expansions": [], "jurisdiction_routed": False}
 
         # Step 1: Base hybrid retrieval
-        fetch_k = top_k + 2 if (self.use_jarf or self.use_cpde) else top_k
+        fetch_k = max(top_k * 2, 10) if (self.use_jarf or self.use_cpde) else top_k
         candidates = self.base_pipeline.retrieve(query, top_k=fetch_k)
 
         # Step 2: JARF intervention (if enabled)

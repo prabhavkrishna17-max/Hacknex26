@@ -51,7 +51,7 @@ class JurisdictionAuthorityRouter:
         },
         "india": {
             "key": "IN",
-            "aliases": ["india", "in", "indian law"],
+            "aliases": ["india", "ind", "indian law"],
             "statutory_keywords": ["indian contract act", "section 27", "restraint of trade", "delhi", "bombay"],
         },
     }
