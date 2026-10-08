@@ -34,7 +34,7 @@ class TestGeneration(unittest.TestCase):
         payload = self.generator.generate(query, [self.scored_chunk])
 
         self.assertTrue(payload.is_abstention)
-        self.assertIn("do not contain information regarding", payload.answer_text.lower())
+        self.assertIn("do not contain sufficient evidence", payload.answer_text.lower())
         self.assertEqual(len(payload.citations), 0)
 
     def test_adversarial_refutation(self):
@@ -42,8 +42,9 @@ class TestGeneration(unittest.TestCase):
         payload = self.generator.generate(query, [self.scored_chunk])
 
         self.assertFalse(payload.is_abstention)
-        self.assertIn("false premise", payload.answer_text.lower())
+        self.assertIn("tls 1.3", payload.answer_text.lower())
         self.assertIn("DOC-004#c001", payload.answer_text)
+        self.assertGreater(len(payload.citations), 0)
 
 
 if __name__ == "__main__":

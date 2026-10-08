@@ -1,6 +1,14 @@
 from __future__ import annotations
+from enum import Enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
+
+
+class EvidenceState(str, Enum):
+    SUPPORTED = "SUPPORTED"
+    PARTIAL = "PARTIAL"
+    CONFLICTING = "CONFLICTING"
+    INSUFFICIENT = "INSUFFICIENT"
 
 
 class Document(BaseModel):
@@ -41,19 +49,27 @@ class Citation(BaseModel):
     claim: str
     chunk_id: str
     quote_snippet: Optional[str] = None
+    char_start: Optional[int] = None
+    char_end: Optional[int] = None
     verified: bool = False
+    evidence_state: EvidenceState = EvidenceState.SUPPORTED
+    verification_reason: Optional[str] = None
 
 
 class AnswerPayload(BaseModel):
     question_id: Optional[str] = None
     query: str
     answer_text: str
+    evidence_state: EvidenceState = EvidenceState.SUPPORTED
     citations: List[Citation] = Field(default_factory=list)
     is_abstention: bool = False
     abstention_reason: Optional[str] = None
     retrieved_chunks: List[str] = Field(default_factory=list)
     raw_model_output: Optional[str] = None
     latency_ms: Dict[str, float] = Field(default_factory=dict)
+    trace_log: List[str] = Field(default_factory=list)
+    jurisdiction_context: Optional[str] = None
+    generated_by: Optional[str] = None  # e.g. "gemini:<model>", "extractive_fallback"
 
 
 class EvaluationResult(BaseModel):
@@ -69,6 +85,7 @@ class EvaluationResult(BaseModel):
     fabricated_citation_rate: float
     usefulness_score: float
     abstention_correctness: bool
+    evidence_state: EvidenceState = EvidenceState.SUPPORTED
     latency_ms: float
     details: Dict[str, Any] = Field(default_factory=dict)
 
@@ -84,4 +101,5 @@ class BenchmarkSummary(BaseModel):
     mean_latency_ms: float
     p90_latency_ms: float
     abstention_accuracy: float
+    run_metadata: Dict[str, Any] = Field(default_factory=dict)
     results: List[EvaluationResult] = Field(default_factory=list)

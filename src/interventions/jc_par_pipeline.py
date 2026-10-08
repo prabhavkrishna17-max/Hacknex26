@@ -1,6 +1,6 @@
 from __future__ import annotations
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from src.core.models import AnswerPayload, Chunk, ScoredChunk
 from src.interventions.cpde import ClausePrecedenceExpander
 from src.interventions.esv import EvidenceSufficiencyVerifier
@@ -15,7 +15,7 @@ class JCPARPipeline:
     - JARF (Jurisdiction Authority Router & Filter)
     - CPDE (Clause-Precedence Dependency Expander)
     - ESV  (Evidence Sufficiency Verifier)
-    around the unmodified baseline RAG pipeline.
+    around the baseline RAG pipeline.
     """
 
     def __init__(
@@ -50,7 +50,6 @@ class JCPARPipeline:
         meta: Dict[str, Any] = {"expansions": [], "jurisdiction_routed": False}
 
         # Step 1: Base hybrid retrieval
-        # Retrieve a slightly broader initial pool if CPDE or JARF is active
         fetch_k = top_k + 2 if (self.use_jarf or self.use_cpde) else top_k
         candidates = self.base_pipeline.retrieve(query, top_k=fetch_k)
 
@@ -77,14 +76,22 @@ class JCPARPipeline:
     ) -> AnswerPayload:
         """Executes end-to-end question answering with all active interventions."""
         t0 = time.perf_counter()
+        trace_log: List[str] = []
 
         # 1. Retrieval
+        trace_log.append(f"Retrieving top {top_k} candidates for query.")
         retrieved_chunks, ret_meta = self.retrieve(query, selected_jurisdiction=selected_jurisdiction, top_k=top_k)
         ret_ms = (time.perf_counter() - t0) * 1000.0
+
+        if ret_meta.get("jurisdiction_routed"):
+            trace_log.append(f"JARF applied authority boost/filter for {selected_jurisdiction}.")
+        if ret_meta.get("expansions"):
+            trace_log.append(f"CPDE expanded {len(ret_meta['expansions'])} precedence dependencies.")
 
         # 2. ESV Sufficiency Verification (if enabled)
         if self.use_esv:
             v_res = self.esv.verify_sufficiency(query, retrieved_chunks, selected_jurisdiction=selected_jurisdiction)
+            trace_log.append(f"ESV verification status: {v_res.get('status')}")
             if not v_res["is_sufficient"] and v_res["status"] in ("INSUFFICIENT", "NO_RELEVANT_EVIDENCE"):
                 abstain_payload = self.esv.generate_calibrated_abstention(
                     query=query,
@@ -94,20 +101,26 @@ class JCPARPipeline:
                 )
                 tot_ms = (time.perf_counter() - t0) * 1000.0
                 abstain_payload.latency_ms = {"retrieval_ms": ret_ms, "generation_ms": 0.0, "total_ms": tot_ms}
+                abstain_payload.jurisdiction_context = selected_jurisdiction
+                abstain_payload.trace_log = trace_log
                 return abstain_payload
 
         # 3. Grounded Generation
-        # Contextualize query with jurisdiction authority header if JARF enabled
         augmented_query = query
         if self.use_jarf and selected_jurisdiction:
-            jur_header = self.jarf.get_jurisdiction_context_header(selected_jurisdiction)
-            # Instruct generator with governing jurisdiction context
             augmented_query = f"{query} [Jurisdiction: {selected_jurisdiction}]"
 
         t_gen = time.perf_counter()
-        answer = self.base_pipeline.generate(augmented_query, retrieved_chunks, question_id=question_id)
+        answer = self.base_pipeline.generate(
+            augmented_query,
+            retrieved_chunks,
+            question_id=question_id,
+            jurisdiction_context=selected_jurisdiction,
+        )
         gen_ms = (time.perf_counter() - t_gen) * 1000.0
         tot_ms = (time.perf_counter() - t0) * 1000.0
 
         answer.latency_ms = {"retrieval_ms": ret_ms, "generation_ms": gen_ms, "total_ms": tot_ms}
+        answer.jurisdiction_context = selected_jurisdiction
+        answer.trace_log = trace_log
         return answer

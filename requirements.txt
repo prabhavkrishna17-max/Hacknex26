@@ -1,0 +1,5 @@
+# HNX26EPS01 baseline (Python 3.13)
+numpy==2.3.1
+scikit-learn==1.9.1
+pydantic==2.13.5
+google-genai==2.29.0

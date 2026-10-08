@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from src.core.models import Chunk, ScoredChunk
 
 
@@ -10,6 +10,7 @@ class ClausePrecedenceExpander:
     Detects explicit contractual dependency links ('subject to', 'notwithstanding',
     'except as provided in', 'as defined in', 'prevail over') in retrieved chunks and
     deterministically expands the evidence set to include legally decisive carveouts.
+    Operates dynamically without any hardcoded document IDs.
     """
 
     # Precedence & dependency extraction patterns
@@ -30,11 +31,13 @@ class ClausePrecedenceExpander:
         self.max_expansions = max_expansions
         self.clause_index: Dict[Tuple[str, str], Chunk] = {}
         self.doc_index: Dict[str, List[Chunk]] = {}
+        self.section_to_chunks: Dict[str, List[Chunk]] = {}
 
     def index_corpus(self, chunks: List[Chunk]) -> None:
         """Builds an inverted clause locator index mapping (doc_id, section_num) -> Chunk."""
         self.clause_index = {}
         self.doc_index = {}
+        self.section_to_chunks = {}
 
         section_regex = re.compile(r"(?:Section|Schedule|##|\*\*|^|\s)\s*([0-9]+(?:\.[0-9]+)?)", re.IGNORECASE)
 
@@ -49,14 +52,42 @@ class ClausePrecedenceExpander:
                 m_clean = m.strip()
                 if m_clean:
                     self.clause_index[(doc_id, m_clean)] = chunk
+                    self.section_to_chunks.setdefault(m_clean, []).append(chunk)
                     if "." in m_clean:
                         top_sec = m_clean.split(".")[0]
                         self.clause_index.setdefault((doc_id, top_sec), chunk)
+                        self.section_to_chunks.setdefault(top_sec, []).append(chunk)
 
             # Also scan chunk text for section declarations (e.g. "8.3 Express Carveouts")
             text_sec_matches = re.findall(r"(?:^|\n|\b)([0-9]+\.[0-9]+)\b", chunk.text)
             for tm in text_sec_matches:
                 self.clause_index[(doc_id, tm)] = chunk
+                self.section_to_chunks.setdefault(tm, []).append(chunk)
+
+    def _find_target_chunk(self, current_doc_id: str, sec_clean: str) -> Optional[Chunk]:
+        """Dynamically finds the chunk corresponding to sec_clean across current doc and then corpus."""
+        # 1. Exact match in the same document
+        target = self.clause_index.get((current_doc_id, sec_clean))
+        if target:
+            return target
+
+        # 2. Text or heading match within the same document
+        for dc in self.doc_index.get(current_doc_id, []):
+            if f"Section {sec_clean}" in dc.text or f"{sec_clean} " in dc.section_heading or f"{sec_clean} " in dc.text:
+                return dc
+
+        # 3. Match across any other document in the indexed corpus
+        corpus_matches = self.section_to_chunks.get(sec_clean, [])
+        if corpus_matches:
+            return corpus_matches[0]
+
+        # 4. Fallback search across all indexed chunks for explicit Section header
+        for doc_id, doc_chunks in self.doc_index.items():
+            for dc in doc_chunks:
+                if f"Section {sec_clean}" in dc.text or f"Section {sec_clean}" in dc.section_heading:
+                    return dc
+
+        return None
 
     def expand_dependencies(
         self,
@@ -80,36 +111,19 @@ class ClausePrecedenceExpander:
             chunk = sc.chunk
             text = chunk.text
 
-            # Check for precedence patterns
             for pattern, relation in self.PATTERNS:
                 matches = pattern.findall(text)
                 for sec_num in matches:
                     sec_clean = sec_num.strip().rstrip(".")
-
-                    # Look for target chunk in current doc or referenced docs
-                    target_chunk = self.clause_index.get((chunk.doc_id, sec_clean))
-
-                    # If not found in current doc, check DOC-006 default contract
-                    if not target_chunk:
-                        target_chunk = self.clause_index.get(("DOC-006", sec_clean))
-
-                    # If still not found and section is a sub-clause (e.g. 8.3), look for chunks containing it
-                    if not target_chunk:
-                        doc_chunks = self.doc_index.get(chunk.doc_id, [])
-                        for dc in doc_chunks:
-                            if f"Section {sec_clean}" in dc.text or f"{sec_clean} " in dc.section_heading or f"{sec_clean} " in dc.text:
-                                target_chunk = dc
-                                break
+                    target_chunk = self._find_target_chunk(chunk.doc_id, sec_clean)
 
                     if target_chunk and target_chunk.chunk_id not in existing_cids:
-                        # Add target chunk to evidence set with high priority
                         existing_cids.add(target_chunk.chunk_id)
                         added_count += 1
 
-                        # Position expanded carve-out chunk right after the parent chunk
                         expanded_sc = ScoredChunk(
                             chunk=target_chunk,
-                            score=sc.score + 0.15,  # Boost to ensure it remains in top-k
+                            score=sc.score + 0.15,
                             dense_score=sc.dense_score,
                             lexical_score=sc.lexical_score,
                             rank=sc.rank + 1,
@@ -126,7 +140,6 @@ class ClausePrecedenceExpander:
                         if added_count >= self.max_expansions:
                             break
 
-        # Re-sort and re-rank evidence pool
         expanded_chunks.sort(key=lambda x: x.score, reverse=True)
         for rank, item in enumerate(expanded_chunks, start=1):
             item.rank = rank

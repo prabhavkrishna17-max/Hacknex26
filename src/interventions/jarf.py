@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 from src.core.models import Chunk, ScoredChunk
 
 
@@ -9,58 +9,50 @@ class JurisdictionAuthorityRouter:
 
     Treats the user's explicit jurisdiction selection as structured pipeline context.
     Identifies applicable statutory schedules, boosts authoritative governing rules,
-    and suppresses conflicting out-of-jurisdiction default provisions.
+    and suppresses conflicting out-of-jurisdiction provisions across any ingested documents.
+    Operates generically without hardcoding document IDs.
     """
 
-    JURISDICTION_MAP: Dict[str, Dict[str, Any]] = {
+    JURISDICTION_PATTERNS: Dict[str, Dict[str, Any]] = {
         "california": {
             "key": "US-CAL",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"California",
+            "aliases": ["california", "us-cal", "ca"],
             "statutory_keywords": ["california", "16600", "1668", "civil code", "business and professions"],
-            "overridden_sections": ["10", "8.1"],  # Overrides Section 10 (Non-solicitation)
         },
         "delaware": {
             "key": "US-DEL",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"Delaware",
-            "statutory_keywords": ["delaware", "freedom of contract"],
-            "overridden_sections": [],
+            "aliases": ["delaware", "us-del", "de"],
+            "statutory_keywords": ["delaware", "general corporation law", "freedom of contract"],
         },
         "england": {
             "key": "UK-ENG",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"England|United Kingdom",
+            "aliases": ["england", "wales", "united kingdom", "uk", "uk-eng", "english law"],
             "statutory_keywords": ["ucta", "unfair contract terms", "1977", "england", "wales", "cavendish"],
-            "overridden_sections": ["8.1"],
-        },
-        "united kingdom": {
-            "key": "UK-ENG",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"England|United Kingdom",
-            "statutory_keywords": ["ucta", "unfair contract terms", "1977", "england", "wales", "cavendish"],
-            "overridden_sections": ["8.1"],
         },
         "european union": {
             "key": "EU-GDPR",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"European Union|GDPR",
+            "aliases": ["european union", "eu", "gdpr", "eu-gdpr"],
             "statutory_keywords": ["gdpr", "article 82", "article 33", "supervisory authority", "72 hours"],
-            "overridden_sections": ["8.1", "8.2"],
-        },
-        "gdpr": {
-            "key": "EU-GDPR",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"European Union|GDPR",
-            "statutory_keywords": ["gdpr", "article 82", "article 33", "supervisory authority", "72 hours"],
-            "overridden_sections": ["8.1", "8.2"],
         },
         "singapore": {
             "key": "SG",
-            "schedule_doc_id": "DOC-009",
-            "schedule_heading_pattern": r"Singapore",
+            "aliases": ["singapore", "sg", "pdpa"],
             "statutory_keywords": ["singapore", "pdpa", "pdpc", "3 calendar days", "third parties act"],
-            "overridden_sections": [],
+        },
+        "new york": {
+            "key": "US-NY",
+            "aliases": ["new york", "us-ny", "ny"],
+            "statutory_keywords": ["new york", "general obligations law", "ny court of appeals"],
+        },
+        "texas": {
+            "key": "US-TX",
+            "aliases": ["texas", "us-tx", "tx"],
+            "statutory_keywords": ["texas", "business and commerce code", "covenant not to compete"],
+        },
+        "india": {
+            "key": "IN",
+            "aliases": ["india", "in", "indian law"],
+            "statutory_keywords": ["indian contract act", "section 27", "restraint of trade", "delhi", "bombay"],
         },
     }
 
@@ -71,10 +63,36 @@ class JurisdictionAuthorityRouter:
         if not selected_jurisdiction:
             return None
         sj = selected_jurisdiction.lower().strip()
-        for pattern_key, config in self.JURISDICTION_MAP.items():
-            if pattern_key in sj:
-                return config["key"]
-        return sj
+        for _, config in self.JURISDICTION_PATTERNS.items():
+            for alias in config["aliases"]:
+                if alias == sj or f" {alias} " in f" {sj} " or sj.startswith(f"{alias},") or sj.startswith(f"{alias} "):
+                    return config["key"]
+        return sj.upper()
+
+    def _chunk_jurisdiction_affiliation(self, chunk: Chunk) -> Optional[str]:
+        """Detects if a chunk explicitly belongs to a specific jurisdiction schedule or clause."""
+        context_text = (
+            f"{chunk.document_title} "
+            f"{' '.join(chunk.heading_path)} "
+            f"{chunk.section_heading} "
+            f"{chunk.text[:200]}"
+        ).lower()
+
+        # Check if this chunk is part of a schedule, addendum, rider, or governing law section
+        is_schedule_or_law = bool(
+            re.search(r"(?:schedule|addendum|rider|annex|appendix|governing\s+law|jurisdiction)", context_text)
+        )
+
+        for _, config in self.JURISDICTION_PATTERNS.items():
+            for alias in config["aliases"]:
+                # If it's a schedule/rider/law section mentioning the jurisdiction
+                if is_schedule_or_law and re.search(r"\b" + re.escape(alias) + r"\b", context_text):
+                    return config["key"]
+                # Or if the heading specifically names the jurisdiction (e.g., "Schedule US-CAL: State of California")
+                if re.search(r"\b" + re.escape(alias) + r"\b", chunk.section_heading.lower()):
+                    return config["key"]
+
+        return None
 
     def filter_and_route(
         self,
@@ -82,56 +100,38 @@ class JurisdictionAuthorityRouter:
         selected_jurisdiction: Optional[str],
         query: str,
     ) -> List[ScoredChunk]:
-        """Applies jurisdiction authority routing to retrieved candidates."""
-        if not selected_jurisdiction or selected_jurisdiction.lower() in ("default", "none", "unknown"):
+        """Applies jurisdiction authority routing to retrieved candidates without corpus hardcoding."""
+        if not selected_jurisdiction or selected_jurisdiction.lower() in ("default", "none", "unknown", ""):
             return retrieved_chunks
 
         norm_jur = self.normalize_jurisdiction(selected_jurisdiction)
         if not norm_jur:
             return retrieved_chunks
 
-        # Find matching jurisdiction config
-        matched_config = None
-        for config in self.JURISDICTION_MAP.values():
-            if config["key"] == norm_jur:
-                matched_config = config
-                break
-
-        if not matched_config:
-            return retrieved_chunks
-
         reranked: List[ScoredChunk] = []
-        conflicting_suppressed = 0
 
         for sc in retrieved_chunks:
             chunk = sc.chunk
             boosted_score = sc.score
-            is_active_authority = False
+            chunk_jur = self._chunk_jurisdiction_affiliation(chunk)
 
-            # Check if this chunk belongs to the authoritative schedule for selected jurisdiction
-            if chunk.doc_id == matched_config["schedule_doc_id"]:
-                path_text = " ".join(chunk.heading_path) + " " + chunk.section_heading
-                if re.search(matched_config["schedule_heading_pattern"], path_text, re.IGNORECASE):
-                    is_active_authority = True
+            if chunk_jur:
+                if chunk_jur == norm_jur:
+                    # Authoritative match for the user's selected jurisdiction
                     boosted_score += self.authority_boost
+                else:
+                    # Conflicting out-of-jurisdiction schedule -> suppress to avoid cross-jurisdiction pollution
+                    boosted_score = max(0.0, boosted_score - 2.0)
+            else:
+                # General contract chunk: check if text explicitly mentions selected jurisdiction keywords
+                jur_keywords = []
+                for cfg in self.JURISDICTION_PATTERNS.values():
+                    if cfg["key"] == norm_jur:
+                        jur_keywords = cfg.get("statutory_keywords", [])
+                        break
+                if any(kw in chunk.text.lower() for kw in jur_keywords):
+                    boosted_score += 0.5
 
-            # Check if chunk belongs to a CONFLICTING schedule of another jurisdiction
-            is_conflicting_schedule = False
-            if chunk.doc_id == "DOC-009" and not is_active_authority:
-                # Chunk is from DOC-009 but for a DIFFERENT jurisdiction
-                for other_config in self.JURISDICTION_MAP.values():
-                    if other_config["key"] != norm_jur:
-                        path_text = " ".join(chunk.heading_path) + " " + chunk.section_heading
-                        if re.search(other_config["schedule_heading_pattern"], path_text, re.IGNORECASE):
-                            is_conflicting_schedule = True
-                            break
-
-            if is_conflicting_schedule:
-                # Suppress out-of-jurisdiction schedule to prevent legal pollution
-                conflicting_suppressed += 1
-                boosted_score = max(0.0, boosted_score - 2.0)
-
-            # Preserve metadata
             new_sc = ScoredChunk(
                 chunk=chunk,
                 score=boosted_score,
@@ -141,10 +141,7 @@ class JurisdictionAuthorityRouter:
             )
             reranked.append(new_sc)
 
-        # Sort by boosted score
         reranked.sort(key=lambda x: x.score, reverse=True)
-
-        # Re-assign ranks
         for rank, item in enumerate(reranked, start=1):
             item.rank = rank
 
@@ -152,13 +149,13 @@ class JurisdictionAuthorityRouter:
 
     def get_jurisdiction_context_header(self, selected_jurisdiction: Optional[str]) -> str:
         """Generates an explicit authority guidance string for the generator."""
-        if not selected_jurisdiction or selected_jurisdiction.lower() in ("default", "none"):
-            return "GOVERNING JURISDICTION: Default Commercial Law (Delaware, USA / Unspecified)"
+        if not selected_jurisdiction or selected_jurisdiction.lower() in ("default", "none", ""):
+            return "GOVERNING JURISDICTION: Default Commercial Law (Unspecified)"
 
         norm = self.normalize_jurisdiction(selected_jurisdiction)
         return (
-            f"GOVERNING JURISDICTION: {selected_jurisdiction} (Normalized Authority: {norm})\n"
+            f"GOVERNING JURISDICTION: {selected_jurisdiction} (Normalized: {norm})\n"
             f"LEGAL DIRECTIVE: The user has selected {selected_jurisdiction} as authoritative. "
-            f"If the selected jurisdiction's statutory schedule conflicts with general contract boilerplate, "
+            f"If the selected jurisdiction's statutory rules or schedules conflict with general boilerplate, "
             f"the statutory rules of {selected_jurisdiction} supersede."
         )

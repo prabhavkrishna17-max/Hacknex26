@@ -89,6 +89,8 @@ class EvaluationHarness:
                     "citations": [c.model_dump() for c in answer_payload.citations],
                     "retrieved_chunk_ids": [sc.chunk.chunk_id for sc in retrieved_chunks],
                     "is_abstention": answer_payload.is_abstention,
+                    "generated_by": answer_payload.generated_by,
+                    "evidence_state": answer_payload.evidence_state.value,
                     "pipeline_latencies": answer_payload.latency_ms,
                 }
             )

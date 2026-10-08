@@ -35,7 +35,11 @@ class BaselineRAGPipeline:
 
         # Retrieval components
         self.bm25 = BM25Retriever(k1=self.config.bm25_k1, b=self.config.bm25_b)
-        self.embedder = DenseVectorEmbedder(api_key=self.config.gemini_api_key)
+        self.embedder = DenseVectorEmbedder(
+            api_key=self.config.gemini_api_key,
+            model_name=self.config.gemini_embedding_model,
+            strict=self.config.strict_providers,
+        )
         self.dense = DenseRetriever(embedder=self.embedder)
         self.retriever = HybridRetriever(
             bm25_retriever=self.bm25,
@@ -52,11 +56,10 @@ class BaselineRAGPipeline:
                 model_name=self.config.gemini_model,
                 temperature=self.config.temperature,
                 max_tokens=self.config.max_tokens,
+                strict=self.config.strict_providers,
             )
         else:
-            self.generator = DeterministicBaselineGenerator(
-                abstention_threshold=self.config.abstention_similarity_threshold
-            )
+            self.generator = DeterministicBaselineGenerator()
 
         self.documents: List[Document] = []
         self.chunks: List[Chunk] = []
@@ -90,11 +93,26 @@ class BaselineRAGPipeline:
         query: str,
         retrieved_chunks: List[ScoredChunk],
         question_id: Optional[str] = None,
+        jurisdiction_context: Optional[str] = None,
     ) -> AnswerPayload:
         """Generates grounded answer text with inline citations."""
-        return self.generator.generate(query, retrieved_chunks, question_id=question_id)
+        answer = self.generator.generate(
+            query,
+            retrieved_chunks,
+            question_id=question_id,
+            jurisdiction_context=jurisdiction_context,
+        )
+        if answer.generated_by is None:
+            answer.generated_by = type(self.generator).__name__
+        return answer
 
-    def query(self, query: str, question_id: Optional[str] = None, top_k: Optional[int] = None) -> AnswerPayload:
+    def query(
+        self,
+        query: str,
+        question_id: Optional[str] = None,
+        top_k: Optional[int] = None,
+        jurisdiction_context: Optional[str] = None,
+    ) -> AnswerPayload:
         """Executes full end-to-end question answering pipeline."""
         t_start = time.perf_counter()
 
@@ -102,7 +120,12 @@ class BaselineRAGPipeline:
         retrieved = self.retrieve(query, top_k=top_k)
         retrieval_ms = (time.perf_counter() - t_ret_start) * 1000.0
 
-        answer = self.generate(query, retrieved, question_id=question_id)
+        answer = self.generate(
+            query,
+            retrieved,
+            question_id=question_id,
+            jurisdiction_context=jurisdiction_context,
+        )
         total_ms = (time.perf_counter() - t_start) * 1000.0
 
         answer.latency_ms["retrieval_ms"] = retrieval_ms
