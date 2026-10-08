@@ -207,18 +207,60 @@ export default function App() {
     setDocTilt({ x: 0, y: 0 })
   }
 
+  // Live backend API result state
+  const [liveResult, setLiveResult] = useState<null | {
+    query: string
+    answer_text: string
+    citations: Array<{
+      chunk_id: string
+      claim: string
+      quote_snippet?: string
+      char_start?: number
+      char_end?: number
+    }>
+    is_abstention: boolean
+    abstention_reason?: string
+    evidence_state?: string
+    trace_log?: string[]
+  }>(null)
+
+  const handleRunAnalysis = async (queryText?: string) => {
+    const q = (queryText !== undefined ? queryText : userQuery).trim()
+    if (!q) return
+    setIsAnalyzing(true)
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: q,
+          selected_jurisdiction: selectedJurisdiction,
+          top_k: 4,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setLiveResult(data)
+      } else {
+        setLiveResult(null)
+      }
+    } catch {
+      // Backend offline; fallback to preset display
+      setLiveResult(null)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
   // Pre-set query selections
   const handleSelectPreset = (mode: "grounded" | "insufficient") => {
     setQueryMode(mode)
-    setIsAnalyzing(true)
-    if (mode === "grounded") {
-      setUserQuery("Is the vendor required to defend the customer against patent infringement claims?")
-    } else {
-      setUserQuery("What liquidated damages must the vendor pay if source code is not deposited into escrow within sixty days?")
-    }
-    setTimeout(() => {
-      setIsAnalyzing(false)
-    }, 350)
+    const q =
+      mode === "grounded"
+        ? "Is the vendor required to defend the customer against patent infringement claims?"
+        : "What liquidated damages must the vendor pay if source code is not deposited into escrow within sixty days?"
+    setUserQuery(q)
+    handleRunAnalysis(q)
   }
 
   const activeJurisdictionData = JURISDICTIONS.find((j) => j.id === selectedJurisdiction) || JURISDICTIONS[0]
@@ -697,24 +739,116 @@ export default function App() {
                     className="query-text-input"
                     value={userQuery}
                     onChange={(e) => setUserQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRunAnalysis()
+                    }}
                     placeholder="Ask a question about your documents..."
                     aria-label="Legal Inquiry Input"
                   />
                   <button
                     type="button"
                     className="query-trigger-btn"
-                    onClick={() => {
-                      setIsAnalyzing(true)
-                      setTimeout(() => setIsAnalyzing(false), 300)
-                    }}
+                    onClick={() => handleRunAnalysis()}
                   >
                     {isAnalyzing ? "Verifying..." : "Analyze"}
                   </button>
                 </div>
               </div>
 
-              {/* DEMO STATE 1: Grounded Answer with Exact Traceable Evidence */}
-              {queryMode === "grounded" && !isAnalyzing && (
+              {/* LIVE BACKEND RESULT (when connected) */}
+              {liveResult && !isAnalyzing && (
+                liveResult.is_abstention ? (
+                  <article className="insufficient-evidence-box" aria-label="Calibrated Abstention Notice">
+                    <div className="insufficient-header-badge">
+                      <AlertTriangleIcon className="alert-svg" />
+                      <span>INSUFFICIENT EVIDENCE ({liveResult.evidence_state || "ABSTAIN"})</span>
+                    </div>
+                    <h3 className="insufficient-title">
+                      {liveResult.answer_text}
+                    </h3>
+                    <p className="insufficient-body">
+                      {liveResult.abstention_reason || "Core subject matter is absent from the provided documents."}
+                    </p>
+
+                    <div className="philosophy-callout-box">
+                      <div className="philosophy-tag-row">
+                        <ShieldCheckIcon className="shield-svg" />
+                        <span className="philosophy-tag">PRODUCT PHILOSOPHY: VERIFIABILITY &gt; FLUENCY</span>
+                      </div>
+                      <p className="philosophy-text">
+                        The system strictly abstains from synthesizing speculative clauses or penalty figures
+                        when verifiable evidence is absent. Rather than hallucinating a plausible answer,
+                        HNX Legal Intelligence safeguards judicial and corporate diligence through calibrated abstention.
+                      </p>
+                    </div>
+                  </article>
+                ) : (
+                  <article className="results-card" aria-label="Document-Grounded Answer">
+                    <header className="answer-header-row">
+                      <span className="answer-section-tag">
+                        <ShieldCheckIcon className="tag-svg" />
+                        DOCUMENT-GROUNDED ANSWER
+                      </span>
+                      <span className="evidence-badge-verified">
+                        <CheckIcon className="check-svg" />
+                        {liveResult.evidence_state || "VERIFIED"} ({liveResult.citations.length} CITATIONS)
+                      </span>
+                    </header>
+
+                    <div className="grounded-explanation-text" style={{ fontSize: "1.05rem", lineHeight: 1.65 }}>
+                      {liveResult.answer_text}
+                    </div>
+
+                    <div className="evidence-chain-connector" aria-label="Evidence hierarchy link">
+                      <div className="chain-line" />
+                      <span className="chain-badge">SUPPORTED BY EXACT EVIDENCE</span>
+                      <div className="chain-line" />
+                    </div>
+
+                    <div className="evidence-cards-container">
+                      {liveResult.citations.map((cit, cIdx) => (
+                        <div key={cit.chunk_id + cIdx} className="evidence-card">
+                          <div className="evidence-meta-row">
+                            <div className="evidence-doc-pill">
+                              <span className="doc-num">{cit.chunk_id}</span>
+                              {cit.char_start !== undefined && (
+                                <>
+                                  <span className="sep">·</span>
+                                  <span className="evidence-clause-tag">Span {cit.char_start}–{cit.char_end}</span>
+                                </>
+                              )}
+                            </div>
+                            <span className="evidence-type-badge">Verbatim Grounding</span>
+                          </div>
+                          <blockquote className="evidence-excerpt-quote">
+                            "{cit.quote_snippet || cit.claim}"
+                          </blockquote>
+                          <button
+                            type="button"
+                            className="view-source-action-btn"
+                            onClick={() =>
+                              setActiveSourceModal({
+                                docId: cit.chunk_id.split("#")[0] || "DOC",
+                                docTitle: "Ingested Contract Evidence",
+                                section: cit.chunk_id,
+                                quote: cit.quote_snippet || cit.claim,
+                                fullClause: cit.quote_snippet || cit.claim,
+                                highlight: cit.quote_snippet || cit.claim,
+                              })
+                            }
+                          >
+                            <ExternalSourceIcon className="source-svg" />
+                            <span>View source clause</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                )
+              )}
+
+              {/* DEMO STATE 1: Grounded Answer with Exact Traceable Evidence (Fallback) */}
+              {!liveResult && queryMode === "grounded" && !isAnalyzing && (
                 <article className="results-card" aria-label="Document-Grounded Answer">
                   <header className="answer-header-row">
                     <span className="answer-section-tag">
@@ -825,8 +959,8 @@ export default function App() {
                 </article>
               )}
 
-              {/* DEMO STATE 2: Insufficient Evidence Demonstration State */}
-              {queryMode === "insufficient" && !isAnalyzing && (
+              {/* DEMO STATE 2: Insufficient Evidence Demonstration State (Fallback) */}
+              {!liveResult && queryMode === "insufficient" && !isAnalyzing && (
                 <article className="insufficient-evidence-box" aria-label="Calibrated Abstention Notice">
                   <div className="insufficient-header-badge">
                     <AlertTriangleIcon className="alert-svg" />
