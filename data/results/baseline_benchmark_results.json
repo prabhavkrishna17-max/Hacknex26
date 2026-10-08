@@ -10,8 +10,8 @@
   "mean_unsupported_claim_rate": 0.0,
   "mean_fabricated_citation_rate": 0.0,
   "mean_usefulness_score": 0.9473958333333333,
-  "mean_latency_ms": 0.38045000007969065,
-  "p90_latency_ms": 0.49215000126423547,
+  "mean_latency_ms": 0.42916874986076436,
+  "p90_latency_ms": 0.5810499997096485,
   "abstention_accuracy": 1.0,
   "results": [
     {
@@ -27,9 +27,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 0.8333333333333333,
       "abstention_correctness": true,
-      "latency_ms": 1.0779000003822148,
+      "latency_ms": 0.7363999993685866,
       "details": {
-        "answer_text": "Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Maximum gRPC Frame Size:** The gateway strictly enforces a maximum payload frame size of 4,194,304 bytes (4.0 MB) [DOC-001#c003]. - **Recovery Point Objective (RPO):** Maximum allowable data loss for committed telemetry control state is zero (RPO = 0), ensured by synchronous fsync on quorum writes [DOC-002#c004]. - **Recovery Time Objective (RTO):** Regional cluster control plane RTO is 12 seconds for soft node failures and 60 seconds for catastrophic multi-node hardware drops [DOC-002#c004]. - **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions [DOC-002#c002]. Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. System Overview\nThe AeroGrid Telemetry Platform ingests real-time power grid sensor streams, microgrid state vectors, and inverter telemetry from distributed edge nodes across 14 geographical regions [DOC-001#c002].",
+        "answer_text": "Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Maximum gRPC Frame Size:** The gateway strictly enforces a maximum payload frame size of 4,194,304 bytes (4.0 MB) [DOC-001#c003]. - **Recovery Point Objective (RPO):** Maximum allowable data loss for committed telemetry control state is zero (RPO = 0), ensured by synchronous fsync on quorum writes [DOC-002#c004]. - **Recovery Time Objective (RTO):** Regional cluster control plane RTO is 12 seconds for soft node failures and 60 seconds for catastrophic multi-node hardware drops [DOC-002#c004]. Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month [DOC-003#c004]. - **Immediate Tenant Erasure Restrictions:** Customer telemetry cannot be purged within 24 hours under any circumstances due to non-repudiation audit trails; requests for emergency deletion require CISO dual-authorization approval [DOC-003#c004]. System Overview\nThe AeroGrid Telemetry Platform ingests real-time power grid sensor streams, microgrid state vectors, and inverter telemetry from distributed edge nodes across 14 geographical regions [DOC-001#c002].",
         "citations": [
           {
             "claim": "Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections",
@@ -56,15 +56,15 @@
             "verified": true
           },
           {
-            "claim": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions",
-            "chunk_id": "DOC-002#c002",
-            "quote_snippet": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions.",
+            "claim": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month",
+            "chunk_id": "DOC-003#c004",
+            "quote_snippet": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled",
             "verified": true
           },
           {
-            "claim": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment",
-            "chunk_id": "DOC-002#c002",
-            "quote_snippet": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state co",
+            "claim": "- **Immediate Tenant Erasure Restrictions:** Customer telemetry cannot be purged within 24 hours under any circumstances due to non-repudiation audit trails; requests for emergency deletion require CISO dual-authorization approval",
+            "chunk_id": "DOC-003#c004",
+            "quote_snippet": "- **Immediate Tenant Erasure Restrictions:** Customer telemetry cannot be purged within 24 hours under any circumstances",
             "verified": true
           },
           {
@@ -77,12 +77,12 @@
         "retrieved_chunk_ids": [
           "DOC-001#c003",
           "DOC-002#c004",
-          "DOC-002#c002",
+          "DOC-003#c004",
           "DOC-001#c002"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.2471999996487284
+          "generation_ms": 0.23460000011255033
         }
       }
     },
@@ -99,9 +99,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.5291000015859026,
+      "latency_ms": 0.4999000011594035,
       "details": {
-        "answer_text": "- **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive heartbeats are missed, corresponding to a timeout threshold of 15,000 milliseconds (15.0 seconds) [DOC-001#c005]. Worker Node Health & Heartbeats\nWorker nodes maintain active membership in the ingestion ring via distributed consensus heartbeats [DOC-001#c005]. - **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions [DOC-002#c002]. Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. - **Concurrent Connections:** Each worker instance is provisioned to sustain up to 25,000 active concurrent WebSocket telemetry streams [DOC-001#c003]. Split-Brain Mitigation\nIn the event of network partition or cross-datacenter fiber interruption:\n- **Minority Partition Isolation:** Any sub-cluster containing fewer nodes than the required quorum immediately enters a read-only degraded mode within 3.5 seconds [DOC-002#c003].",
+        "answer_text": "- **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive heartbeats are missed, corresponding to a timeout threshold of 15,000 milliseconds (15.0 seconds) [DOC-001#c005]. Worker Node Health & Heartbeats\nWorker nodes maintain active membership in the ingestion ring via distributed consensus heartbeats [DOC-001#c005]. - **Concurrent Connections:** Each worker instance is provisioned to sustain up to 25,000 active concurrent WebSocket telemetry streams [DOC-001#c003]. Split-Brain Mitigation\nIn the event of network partition or cross-datacenter fiber interruption:\n- **Minority Partition Isolation:** Any sub-cluster containing fewer nodes than the required quorum immediately enters a read-only degraded mode within 3.5 seconds [DOC-002#c003]. - **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions [DOC-002#c002]. Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002].",
         "citations": [
           {
             "claim": "- **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive heartbeats are missed, corresponding to a timeout threshold of 15,000 milliseconds (15.0 seconds)",
@@ -116,18 +116,6 @@
             "verified": true
           },
           {
-            "claim": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions",
-            "chunk_id": "DOC-002#c002",
-            "quote_snippet": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions.",
-            "verified": true
-          },
-          {
-            "claim": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment",
-            "chunk_id": "DOC-002#c002",
-            "quote_snippet": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state co",
-            "verified": true
-          },
-          {
             "claim": "- **Concurrent Connections:** Each worker instance is provisioned to sustain up to 25,000 active concurrent WebSocket telemetry streams",
             "chunk_id": "DOC-001#c003",
             "quote_snippet": "- **Concurrent Connections:** Each worker instance is provisioned to sustain up to 25,000 active concurrent WebSocket te",
@@ -138,17 +126,29 @@
             "chunk_id": "DOC-002#c003",
             "quote_snippet": "Split-Brain Mitigation\nIn the event of network partition or cross-datacenter fiber interruption:\n- **Minority Partition ",
             "verified": true
+          },
+          {
+            "claim": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions",
+            "chunk_id": "DOC-002#c002",
+            "quote_snippet": "- **Quorum Requirements:** A minimum cluster size of 5 control nodes is required for active production regions.",
+            "verified": true
+          },
+          {
+            "claim": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment",
+            "chunk_id": "DOC-002#c002",
+            "quote_snippet": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state co",
+            "verified": true
           }
         ],
         "retrieved_chunk_ids": [
           "DOC-001#c005",
-          "DOC-002#c002",
           "DOC-001#c003",
-          "DOC-002#c003"
+          "DOC-002#c003",
+          "DOC-002#c002"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.15129999883356504
+          "generation_ms": 0.14840000039839651
         }
       }
     },
@@ -165,9 +165,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 0.875,
       "abstention_correctness": true,
-      "latency_ms": 0.4552000009425683,
+      "latency_ms": 0.5005999992135912,
       "details": {
-        "answer_text": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. Consensus Architecture\nAeroGrid maintains cluster state, membership tables, and dynamic routing configurations using a lightweight Raft consensus implementation dubbed AeroRaft [DOC-002#c002]. Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds) [DOC-002#c004]. - **Recovery Time Objective (RTO):** Regional cluster control plane RTO is 12 seconds for soft node failures and 60 seconds for catastrophic multi-node hardware drops [DOC-002#c004]. Split-Brain Mitigation\nIn the event of network partition or cross-datacenter fiber interruption:\n- **Minority Partition Isolation:** Any sub-cluster containing fewer nodes than the required quorum immediately enters a read-only degraded mode within 3.5 seconds [DOC-002#c003]. Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days [DOC-003#c003]. - **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits [DOC-003#c003].",
+        "answer_text": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. Consensus Architecture\nAeroGrid maintains cluster state, membership tables, and dynamic routing configurations using a lightweight Raft consensus implementation dubbed AeroRaft [DOC-002#c002]. Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds) [DOC-002#c004]. - **Recovery Time Objective (RTO):** Regional cluster control plane RTO is 12 seconds for soft node failures and 60 seconds for catastrophic multi-node hardware drops [DOC-002#c004]. Split-Brain Mitigation\nIn the event of network partition or cross-datacenter fiber interruption:\n- **Minority Partition Isolation:** Any sub-cluster containing fewer nodes than the required quorum immediately enters a read-only degraded mode within 3.5 seconds [DOC-002#c003]. Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Unfair Contract Terms Act 1977 (UCTA):** Any provision attempting to exclude or restrict liability for death or personal injury resulting from negligence is void [DOC-009#c005]. All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA [DOC-009#c005].",
         "citations": [
           {
             "claim": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment",
@@ -200,15 +200,15 @@
             "verified": true
           },
           {
-            "claim": "Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days",
-            "chunk_id": "DOC-003#c003",
-            "quote_snippet": "Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed ",
+            "claim": "Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Unfair Contract Terms Act 1977 (UCTA):** Any provision attempting to exclude or restrict liability for death or personal injury resulting from negligence is void",
+            "chunk_id": "DOC-009#c005",
+            "quote_snippet": "Schedule UK-ENG: England and Wales (United Kingdom)\nWhen England and Wales is the selected Chosen Jurisdiction:\n4.1 **Un",
             "verified": true
           },
           {
-            "claim": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits",
-            "chunk_id": "DOC-003#c003",
-            "quote_snippet": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and",
+            "claim": "All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section 11 of UCTA",
+            "chunk_id": "DOC-009#c005",
+            "quote_snippet": "All other exclusions of liability in Section 8 must satisfy the statutory \"requirement of reasonableness\" under Section ",
             "verified": true
           }
         ],
@@ -216,11 +216,11 @@
           "DOC-002#c002",
           "DOC-002#c004",
           "DOC-002#c003",
-          "DOC-003#c003"
+          "DOC-009#c005"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.16730000061215833
+          "generation_ms": 0.14090000149735715
         }
       }
     },
@@ -237,16 +237,10 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.3661999999167165,
+      "latency_ms": 0.3842999994958518,
       "details": {
-        "answer_text": "Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds) [DOC-002#c004]. Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. - **Leader Lease Duration:** The active leader holds a monotonic hardware lease timer of 10.0 seconds [DOC-002#c002]. Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the automatic circuit breaker sheds tier-3 auxiliary sensor streams (ambient temperature and humidity) while preserving tier-1 core voltage and frequency vectors [DOC-005#c003]. - **Response SLA:** Primary on-call engineer paged within 2 minutes; active incident commander bridge established within 5 minutes [DOC-005#c002]. - **Severity 2 (P2 - Major):**\n  - **Definition:** Degradation of warm storage query latency exceeding 1,500 milliseconds, or single worker node failure in a 3-node cluster [DOC-005#c002].",
+        "answer_text": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment [DOC-002#c002]. - **Leader Lease Duration:** The active leader holds a monotonic hardware lease timer of 10.0 seconds [DOC-002#c002]. Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds) [DOC-002#c004]. Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the automatic circuit breaker sheds tier-3 auxiliary sensor streams (ambient temperature and humidity) while preserving tier-1 core voltage and frequency vectors [DOC-005#c003]. - **Response SLA:** Primary on-call engineer paged within 2 minutes; active incident commander bridge established within 5 minutes [DOC-005#c002]. - **Severity 2 (P2 - Major):**\n  - **Definition:** Degradation of warm storage query latency exceeding 1,500 milliseconds, or single worker node failure in a 3-node cluster [DOC-005#c002].",
         "citations": [
-          {
-            "claim": "Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds)",
-            "chunk_id": "DOC-002#c004",
-            "quote_snippet": "Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the succes",
-            "verified": true
-          },
           {
             "claim": "Quorum is defined as `floor(N/2) + 1`, necessitating at least 3 surviving control nodes for leader election and state commitment",
             "chunk_id": "DOC-002#c002",
@@ -257,6 +251,12 @@
             "claim": "- **Leader Lease Duration:** The active leader holds a monotonic hardware lease timer of 10.0 seconds",
             "chunk_id": "DOC-002#c002",
             "quote_snippet": "- **Leader Lease Duration:** The active leader holds a monotonic hardware lease timer of 10.0 seconds.",
+            "verified": true
+          },
+          {
+            "claim": "Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the successor election and lease handoff must complete within 3,500 milliseconds (3.5 seconds)",
+            "chunk_id": "DOC-002#c004",
+            "quote_snippet": "Failover SLAs & Recovery Targets\n- **Automatic Leader Election SLA:** In the event of primary leader failure, the succes",
             "verified": true
           },
           {
@@ -279,14 +279,14 @@
           }
         ],
         "retrieved_chunk_ids": [
-          "DOC-002#c004",
           "DOC-002#c002",
+          "DOC-002#c004",
           "DOC-005#c003",
           "DOC-005#c002"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.1381999991281191
+          "generation_ms": 0.13800000124319922
         }
       }
     },
@@ -303,16 +303,10 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 0.7,
       "abstention_correctness": true,
-      "latency_ms": 0.3581000000849599,
+      "latency_ms": 0.558699999601231,
       "details": {
-        "answer_text": "Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers [DOC-003#c002]. - **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits [DOC-003#c003]. Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days [DOC-003#c003]. Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month [DOC-003#c004]. Media & Storage Security Prohibitions\n- **Removable Media Ban:** The connection of unencrypted external storage devices (including USB flash drives, SD cards, and portable hard disks) to edge gateway hardware is strictly prohibited by security policy [DOC-004#c005]. Any detected USB mass storage event triggers an immediate hardware lockdown and P1 security alert [DOC-004#c005].",
+        "answer_text": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits [DOC-003#c003]. Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days [DOC-003#c003]. Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers [DOC-003#c002]. - **\"Applicable Law\"** means all local, state, national, and international laws, treaties, regulations, and conventions applicable to the respective Party under the Chosen Jurisdiction [DOC-006#c002]. - **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics [DOC-006#c002]. 2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY [DOC-008#c003]. Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited [DOC-008#c003].",
         "citations": [
-          {
-            "claim": "Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers",
-            "chunk_id": "DOC-003#c002",
-            "quote_snippet": "Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patte",
-            "verified": true
-          },
           {
             "claim": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits",
             "chunk_id": "DOC-003#c003",
@@ -326,33 +320,45 @@
             "verified": true
           },
           {
-            "claim": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month",
-            "chunk_id": "DOC-003#c004",
-            "quote_snippet": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled",
+            "claim": "Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers",
+            "chunk_id": "DOC-003#c002",
+            "quote_snippet": "Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patte",
             "verified": true
           },
           {
-            "claim": "Media & Storage Security Prohibitions\n- **Removable Media Ban:** The connection of unencrypted external storage devices (including USB flash drives, SD cards, and portable hard disks) to edge gateway hardware is strictly prohibited by security policy",
-            "chunk_id": "DOC-004#c005",
-            "quote_snippet": "Media & Storage Security Prohibitions\n- **Removable Media Ban:** The connection of unencrypted external storage devices ",
+            "claim": "- **\"Applicable Law\"** means all local, state, national, and international laws, treaties, regulations, and conventions applicable to the respective Party under the Chosen Jurisdiction",
+            "chunk_id": "DOC-006#c002",
+            "quote_snippet": "- **\"Applicable Law\"** means all local, state, national, and international laws, treaties, regulations, and conventions ",
             "verified": true
           },
           {
-            "claim": "Any detected USB mass storage event triggers an immediate hardware lockdown and P1 security alert",
-            "chunk_id": "DOC-004#c005",
-            "quote_snippet": "Any detected USB mass storage event triggers an immediate hardware lockdown and P1 security alert.",
+            "claim": "- **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to the Service, excluding Anonymized Usage Metrics",
+            "chunk_id": "DOC-006#c002",
+            "quote_snippet": "- **\"Customer Data\"** means all electronic data, files, and personal records submitted by or on behalf of Customer to th",
+            "verified": true
+          },
+          {
+            "claim": "2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AND EXCLUSIVE MONETARY REMEDY FOR ANY UNPLANNED DOWNTIME OR FAILURE TO MEET THE AVAILABILITY WARRANTY",
+            "chunk_id": "DOC-008#c003",
+            "quote_snippet": "2.3 **Sole Remedy:** EXCEPT AS SET FORTH IN SECTION 3.1 (CHRONIC FAILURE), SERVICE CREDITS CONSTITUTE CUSTOMER'S SOLE AN",
+            "verified": true
+          },
+          {
+            "claim": "Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's account shall be credited upon request as follows:\n- **99.0% to < 99.9%:** 10% of monthly subscription fee credited",
+            "chunk_id": "DOC-008#c003",
+            "quote_snippet": "Service Credit Schedule\n2.1 **Credit Tiers:** In the event Monthly Uptime falls below the 99.9% commitment, Customer's a",
             "verified": true
           }
         ],
         "retrieved_chunk_ids": [
-          "DOC-003#c002",
           "DOC-003#c003",
-          "DOC-003#c004",
-          "DOC-004#c005"
+          "DOC-003#c002",
+          "DOC-006#c002",
+          "DOC-008#c003"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.11579999954847153
+          "generation_ms": 0.20089999998162966
         }
       }
     },
@@ -369,9 +375,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 0.75,
       "abstention_correctness": true,
-      "latency_ms": 0.34640000012586825,
+      "latency_ms": 0.5097999983263435,
       "details": {
-        "answer_text": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits [DOC-003#c003]. Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days [DOC-003#c003]. Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers [DOC-003#c002]. # AeroGrid Telemetry Storage Lifecycle & Retention Policy\n**Document ID:** DOC-003\n**Version:** 1.8.0\n**Classification:** Enterprise Engineering Standard\n**Domain:** Storage Lifecycle & Regulatory Compliance [DOC-003#c001]. Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month [DOC-003#c004].",
+        "answer_text": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits [DOC-003#c003]. Storage Tier Specifications\n- **Hot Tier (NVMe SSD Cluster):**\n  - **Retention Duration:** High-resolution uncompressed telemetry is retained for 7 calendar days [DOC-003#c003]. Storage Tiering Overview\nTelemetry data transitions through three distinct storage tiers based on data age, access patterns, and regulatory compliance standards: Hot, Warm, and Cold tiers [DOC-003#c002]. # AeroGrid Telemetry Storage Lifecycle & Retention Policy\n**Document ID:** DOC-003\n**Version:** 1.8.0\n**Classification:** Enterprise Engineering Standard\n**Domain:** Storage Lifecycle & Regulatory Compliance [DOC-003#c001]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit [DOC-007#c004].",
         "citations": [
           {
             "claim": "- **Cold Tier (Encrypted Object Storage / Parquet):**\n  - **Retention Duration:** Aggregated 1-minute rollup vectors and compliance logs are retained for exactly 7 years (2,555 days) to fulfill federal regulatory audits",
@@ -398,9 +404,15 @@
             "verified": true
           },
           {
-            "claim": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled for permanent cryptographic erasure on the first Sunday of each calendar month",
-            "chunk_id": "DOC-003#c004",
-            "quote_snippet": "Data Purging & Deletion Mandates\n- **Automatic Expiration:** Data exceeding the 7-year regulatory threshold is scheduled",
+            "claim": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident",
+            "chunk_id": "DOC-007#c004",
+            "quote_snippet": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer ",
+            "verified": true
+          },
+          {
+            "claim": "Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit",
+            "chunk_id": "DOC-007#c004",
+            "quote_snippet": "Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administra",
             "verified": true
           }
         ],
@@ -408,11 +420,11 @@
           "DOC-003#c003",
           "DOC-003#c002",
           "DOC-003#c001",
-          "DOC-003#c004"
+          "DOC-007#c004"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.11009999980160501
+          "generation_ms": 0.1598999988345895
         }
       }
     },
@@ -429,9 +441,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.4193999993731268,
+      "latency_ms": 0.6033999998180661,
       "details": {
-        "answer_text": "Transport Security & Mutual TLS\nAll edge telemetry gateways communicating with regional ingestion proxies must establish Mutual TLS (mTLS) [DOC-004#c002]. - **Cipher Suites:** Permitted cipher suites are restricted to `TLS_AES_256_GCM_SHA384` and `TLS_CHACHA20_POLY1305_SHA256` [DOC-004#c002]. Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Backpressure Handling:** When internal queue utilization exceeds 85% capacity, worker proxies issue HTTP 429 / backpressure throttle frames instructing edge gateways to buffer locally for an exponential backoff period starting at 500 milliseconds [DOC-001#c003]. - **Revocation Check:** Regional proxies query an in-memory Redis bloom filter synchronized with the certificate revocation list (CRL) every 60 seconds [DOC-004#c004]. Partitioning & Message Routing\nTelemetry frames are partitioned across Apache Kafka ingestion topics using a composite hashing key consisting of `tenant_id:substation_id:sensor_uuid` [DOC-001#c004]. - **Ingestion Latency Target:** 99th percentile (P99) end-to-end ingest transit latency from edge ingress to durable message broker commit is 45 milliseconds under normal operating load [DOC-001#c004].",
+        "answer_text": "Transport Security & Mutual TLS\nAll edge telemetry gateways communicating with regional ingestion proxies must establish Mutual TLS (mTLS) [DOC-004#c002]. - **Cipher Suites:** Permitted cipher suites are restricted to `TLS_AES_256_GCM_SHA384` and `TLS_CHACHA20_POLY1305_SHA256` [DOC-004#c002]. Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Backpressure Handling:** When internal queue utilization exceeds 85% capacity, worker proxies issue HTTP 429 / backpressure throttle frames instructing edge gateways to buffer locally for an exponential backoff period starting at 500 milliseconds [DOC-001#c003]. Partitioning & Message Routing\nTelemetry frames are partitioned across Apache Kafka ingestion topics using a composite hashing key consisting of `tenant_id:substation_id:sensor_uuid` [DOC-001#c004]. - **Ingestion Latency Target:** 99th percentile (P99) end-to-end ingest transit latency from edge ingress to durable message broker commit is 45 milliseconds under normal operating load [DOC-001#c004]. Hardware Identity & Attestation\n- **TPM Integration:** Every physical edge gateway is provisioned with a cryptographic Trusted Platform Module (TPM 2.0) [DOC-004#c003]. Private keys are generated on-chip with non-exportable flag attributes [DOC-004#c003].",
         "citations": [
           {
             "claim": "Transport Security & Mutual TLS\nAll edge telemetry gateways communicating with regional ingestion proxies must establish Mutual TLS (mTLS)",
@@ -458,12 +470,6 @@
             "verified": true
           },
           {
-            "claim": "- **Revocation Check:** Regional proxies query an in-memory Redis bloom filter synchronized with the certificate revocation list (CRL) every 60 seconds",
-            "chunk_id": "DOC-004#c004",
-            "quote_snippet": "- **Revocation Check:** Regional proxies query an in-memory Redis bloom filter synchronized with the certificate revocat",
-            "verified": true
-          },
-          {
             "claim": "Partitioning & Message Routing\nTelemetry frames are partitioned across Apache Kafka ingestion topics using a composite hashing key consisting of `tenant_id:substation_id:sensor_uuid`",
             "chunk_id": "DOC-001#c004",
             "quote_snippet": "Partitioning & Message Routing\nTelemetry frames are partitioned across Apache Kafka ingestion topics using a composite h",
@@ -474,17 +480,29 @@
             "chunk_id": "DOC-001#c004",
             "quote_snippet": "- **Ingestion Latency Target:** 99th percentile (P99) end-to-end ingest transit latency from edge ingress to durable mes",
             "verified": true
+          },
+          {
+            "claim": "Hardware Identity & Attestation\n- **TPM Integration:** Every physical edge gateway is provisioned with a cryptographic Trusted Platform Module (TPM 2.0)",
+            "chunk_id": "DOC-004#c003",
+            "quote_snippet": "Hardware Identity & Attestation\n- **TPM Integration:** Every physical edge gateway is provisioned with a cryptographic T",
+            "verified": true
+          },
+          {
+            "claim": "Private keys are generated on-chip with non-exportable flag attributes",
+            "chunk_id": "DOC-004#c003",
+            "quote_snippet": "Private keys are generated on-chip with non-exportable flag attributes.",
+            "verified": true
           }
         ],
         "retrieved_chunk_ids": [
           "DOC-004#c002",
           "DOC-001#c003",
-          "DOC-004#c004",
-          "DOC-001#c004"
+          "DOC-001#c004",
+          "DOC-004#c003"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.13939999917056412
+          "generation_ms": 0.14770000052521937
         }
       }
     },
@@ -501,9 +519,9 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.3801000002567889,
+      "latency_ms": 0.5034999994677491,
       "details": {
-        "answer_text": "Incident Severity Definitions\n- **Severity 1 (P1 - Critical):**\n  - **Definition:** Regional ingestion pipeline outage, total loss of telemetry streams for >1 substation, or packet drop rate exceeding 2.0% across any 60-second measurement window [DOC-005#c002]. - **Response SLA:** Primary on-call engineer paged within 2 minutes; active incident commander bridge established within 5 minutes [DOC-005#c002]. - **Manual Kill Switch:** Invoking `/api/v1/ops/emergency-shed` requires dual-token approval from both the On-Call Lead and the Shift Safety Officer [DOC-005#c003]. Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the automatic circuit breaker sheds tier-3 auxiliary sensor streams (ambient temperature and humidity) while preserving tier-1 core voltage and frequency vectors [DOC-005#c003]. - **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive heartbeats are missed, corresponding to a timeout threshold of 15,000 milliseconds (15.0 seconds) [DOC-001#c005]. - **Rebalance Cooldown:** Once an eviction event occurs, the cluster enforces a mandatory 30-second rebalance cooldown before migrating consumer groups to avoid cascading failovers [DOC-001#c005]. Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Maximum gRPC Frame Size:** The gateway strictly enforces a maximum payload frame size of 4,194,304 bytes (4.0 MB) [DOC-001#c003].",
+        "answer_text": "Incident Severity Definitions\n- **Severity 1 (P1 - Critical):**\n  - **Definition:** Regional ingestion pipeline outage, total loss of telemetry streams for >1 substation, or packet drop rate exceeding 2.0% across any 60-second measurement window [DOC-005#c002]. - **Response SLA:** Primary on-call engineer paged within 2 minutes; active incident commander bridge established within 5 minutes [DOC-005#c002]. 3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident [DOC-007#c004]. Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit [DOC-007#c004]. - **Manual Kill Switch:** Invoking `/api/v1/ops/emergency-shed` requires dual-token approval from both the On-Call Lead and the Shift Safety Officer [DOC-005#c003]. Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the automatic circuit breaker sheds tier-3 auxiliary sensor streams (ambient temperature and humidity) while preserving tier-1 core voltage and frequency vectors [DOC-005#c003]. Ingestion Cluster Specifications\nThe edge ingestion proxies receive incoming telemetry streams over gRPC and WebSocket connections [DOC-001#c003]. - **Maximum gRPC Frame Size:** The gateway strictly enforces a maximum payload frame size of 4,194,304 bytes (4.0 MB) [DOC-001#c003].",
         "citations": [
           {
             "claim": "Incident Severity Definitions\n- **Severity 1 (P1 - Critical):**\n  - **Definition:** Regional ingestion pipeline outage, total loss of telemetry streams for >1 substation, or packet drop rate exceeding 2.0% across any 60-second measurement window",
@@ -518,6 +536,18 @@
             "verified": true
           },
           {
+            "claim": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer Data, Vendor shall notify Customer in writing without undue delay, and in any event within forty-eight (48) hours of becoming aware of the incident",
+            "chunk_id": "DOC-007#c004",
+            "quote_snippet": "3.2 **Security Incident Notification to Customer:** In the event of a confirmed Personal Data Breach impacting Customer ",
+            "verified": true
+          },
+          {
+            "claim": "Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administrative, physical, and technical safeguards, including AES-256 encryption at rest and TLS 1.3 in transit",
+            "chunk_id": "DOC-007#c004",
+            "quote_snippet": "Security Measures and Incident Notification\n3.1 **Technical Safeguards:** Vendor implements industry-standard administra",
+            "verified": true
+          },
+          {
             "claim": "- **Manual Kill Switch:** Invoking `/api/v1/ops/emergency-shed` requires dual-token approval from both the On-Call Lead and the Shift Safety Officer",
             "chunk_id": "DOC-005#c003",
             "quote_snippet": "- **Manual Kill Switch:** Invoking `/api/v1/ops/emergency-shed` requires dual-token approval from both the On-Call Lead ",
@@ -527,18 +557,6 @@
             "claim": "Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the automatic circuit breaker sheds tier-3 auxiliary sensor streams (ambient temperature and humidity) while preserving tier-1 core voltage and frequency vectors",
             "chunk_id": "DOC-005#c003",
             "quote_snippet": "Emergency Circuit Breakers\n- **Automatic Throttling:** If ingestion cluster CPU exceeds 92% sustained for 3 minutes, the",
-            "verified": true
-          },
-          {
-            "claim": "- **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive heartbeats are missed, corresponding to a timeout threshold of 15,000 milliseconds (15.0 seconds)",
-            "chunk_id": "DOC-001#c005",
-            "quote_snippet": "- **Failure Detection Threshold:** A node is declared unreachable and evicted from the routing mesh if 3 consecutive hea",
-            "verified": true
-          },
-          {
-            "claim": "- **Rebalance Cooldown:** Once an eviction event occurs, the cluster enforces a mandatory 30-second rebalance cooldown before migrating consumer groups to avoid cascading failovers",
-            "chunk_id": "DOC-001#c005",
-            "quote_snippet": "- **Rebalance Cooldown:** Once an eviction event occurs, the cluster enforces a mandatory 30-second rebalance cooldown b",
             "verified": true
           },
           {
@@ -556,13 +574,13 @@
         ],
         "retrieved_chunk_ids": [
           "DOC-005#c002",
+          "DOC-007#c004",
           "DOC-005#c003",
-          "DOC-001#c005",
           "DOC-001#c003"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.14689999989059288
+          "generation_ms": 0.17660000048635993
         }
       }
     },
@@ -579,7 +597,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.2653999999893131,
+      "latency_ms": 0.369400000636233,
       "details": {
         "answer_text": "The provided documents do not contain information regarding quantum.",
         "citations": [],
@@ -591,7 +609,7 @@
         ],
         "is_abstention": true,
         "pipeline_latencies": {
-          "generation_ms": 0.0012000000424450263
+          "generation_ms": 0.0022999993234407157
         }
       }
     },
@@ -608,7 +626,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.2310999989276752,
+      "latency_ms": 0.30139999944367446,
       "details": {
         "answer_text": "The provided documents do not contain information regarding licensing fee.",
         "citations": [],
@@ -616,11 +634,11 @@
           "DOC-001#c002",
           "DOC-001#c001",
           "DOC-003#c001",
-          "DOC-002#c001"
+          "DOC-003#c004"
         ],
         "is_abstention": true,
         "pipeline_latencies": {
-          "generation_ms": 0.002200000380980782
+          "generation_ms": 0.002599999788799323
         }
       }
     },
@@ -637,19 +655,19 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.20810000023629982,
+      "latency_ms": 0.24870000015653204,
       "details": {
         "answer_text": "The provided documents do not contain information regarding go/c++ to pure rust.",
         "citations": [],
         "retrieved_chunk_ids": [
+          "DOC-006#c003",
+          "DOC-006#c007",
           "DOC-003#c004",
-          "DOC-001#c002",
-          "DOC-002#c002",
-          "DOC-005#c001"
+          "DOC-006#c001"
         ],
         "is_abstention": true,
         "pipeline_latencies": {
-          "generation_ms": 0.0018999999156221747
+          "generation_ms": 0.002099999619531445
         }
       }
     },
@@ -666,7 +684,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.2082999999402091,
+      "latency_ms": 0.23750000036670826,
       "details": {
         "answer_text": "The provided documents do not contain information regarding mars.",
         "citations": [],
@@ -678,7 +696,7 @@
         ],
         "is_abstention": true,
         "pipeline_latencies": {
-          "generation_ms": 0.0012999989849049598
+          "generation_ms": 0.0012000000424450263
         }
       }
     },
@@ -695,7 +713,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.28559999918797985,
+      "latency_ms": 0.3347000001667766,
       "details": {
         "answer_text": "The question contains a false premise: the specification mandates TLS 1.3 exclusively and actively rejects unencrypted HTTP/1.1, with permitted cipher suites including TLS_AES_256_GCM_SHA384 [DOC-004#c002].",
         "citations": [
@@ -714,7 +732,7 @@
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.0067999990278622136
+          "generation_ms": 0.01179999890155159
         }
       }
     },
@@ -731,7 +749,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.2843000002030749,
+      "latency_ms": 0.3673999999591615,
       "details": {
         "answer_text": "This assertion contradicts policy: customer telemetry cannot be purged within 24 hours under any circumstances due to non-repudiation audit trails, and data is retained in Hot tier for 7 days and Cold tier for 7 years [DOC-003#c004].",
         "citations": [
@@ -744,13 +762,13 @@
         ],
         "retrieved_chunk_ids": [
           "DOC-003#c004",
-          "DOC-001#c002",
-          "DOC-005#c002",
-          "DOC-002#c004"
+          "DOC-006#c002",
+          "DOC-007#c004",
+          "DOC-001#c002"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.005600000804406591
+          "generation_ms": 0.00670000008540228
         }
       }
     },
@@ -767,7 +785,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.2851999997801613,
+      "latency_ms": 0.33649999932094943,
       "details": {
         "answer_text": "The question contains an incorrect premise: the automatic leader election SLA is 3,500 milliseconds (3.5 seconds), not 120 seconds [DOC-002#c004].",
         "citations": [
@@ -786,7 +804,7 @@
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.006199999916134402
+          "generation_ms": 0.006999998731771484
         }
       }
     },
@@ -803,7 +821,7 @@
       "fabricated_citation_rate": 0.0,
       "usefulness_score": 1.0,
       "abstention_correctness": true,
-      "latency_ms": 0.3868000003421912,
+      "latency_ms": 0.37450000127137173,
       "details": {
         "answer_text": "No section permits unencrypted USB drives: connecting unencrypted external storage devices is strictly prohibited by security policy and triggers an immediate hardware lockdown and P1 security alert [DOC-004#c005].",
         "citations": [
@@ -816,13 +834,13 @@
         ],
         "retrieved_chunk_ids": [
           "DOC-004#c002",
-          "DOC-004#c005",
+          "DOC-007#c004",
           "DOC-005#c003",
-          "DOC-005#c002"
+          "DOC-004#c005"
         ],
         "is_abstention": false,
         "pipeline_latencies": {
-          "generation_ms": 0.009999999747378752
+          "generation_ms": 0.012700000297627412
         }
       }
     }
