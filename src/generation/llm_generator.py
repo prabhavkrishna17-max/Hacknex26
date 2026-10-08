@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+import re
 import time
 from typing import List, Optional
 from pydantic import BaseModel, Field, ValidationError
@@ -88,6 +89,14 @@ class GeminiLLMGenerator(BaseGenerator):
             except Exception as e:  # network / rate limit / 5xx
                 last_err = e
                 wait = 2 ** attempt * 2
+                msg = str(e)
+                if "429" in msg and "RESOURCE_EXHAUSTED" in msg:
+                    if "PerDay" in msg:
+                        raise  # daily quota exhausted; waiting seconds will not help
+                    # Respect the API-provided retry delay (e.g. "'retryDelay': '29s'").
+                    m = re.search(r"retryDelay'?\"?:\s*'?\"?(\d+(?:\.\d+)?)s", msg)
+                    if m:
+                        wait = float(m.group(1)) + 1.0
                 logger.warning(f"Gemini call failed (attempt {attempt + 1}/{self.max_retries}): {e}; retrying in {wait}s")
                 time.sleep(wait)
         raise RuntimeError(f"Gemini generate_content failed after {self.max_retries} attempts: {last_err}")
