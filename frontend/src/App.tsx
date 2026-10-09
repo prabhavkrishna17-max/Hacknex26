@@ -497,6 +497,7 @@ export default function App() {
   const [draftResult, setDraftResult] = useState<any>(null)
   const [editableDraftText, setEditableDraftText] = useState<string>("")
   const [copiedDraft, setCopiedDraft] = useState<boolean>(false)
+  const [showDraftModal, setShowDraftModal] = useState<boolean>(false)
 
   // Non-blocking Scroll Reveal Observer: Reveals cards smoothly as they enter viewport
   useEffect(() => {
@@ -1380,14 +1381,15 @@ export default function App() {
 
                 <div className="intake-samples-grid">
                   {documents.map((doc) => (
-                    <button
+                    <div
                       key={doc.id}
-                      type="button"
                       className="intake-sample-card"
                       onClick={() => {
                         setActiveDocId(doc.id)
                         setUserQuery("Who can terminate this agreement?")
                       }}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="sample-card-left">
                         <span className="sample-dot">●</span>
@@ -1396,8 +1398,24 @@ export default function App() {
                           <span className="sample-meta">{doc.size || "32 KB"} · Ready for analysis</span>
                         </div>
                       </div>
-                      <ArrowRightIcon className="sample-arrow" />
-                    </button>
+                      <div className="sample-card-actions">
+                        <button
+                          type="button"
+                          className="btn-sample-draft"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveDocId(doc.id)
+                            setShowDraftModal(true)
+                          }}
+                          title={`Draft Legal Document for ${doc.title}`}
+                          id={`btn-sample-draft-${doc.id}`}
+                        >
+                          <FileTextIcon className="btn-mini-ico" />
+                          <span>Draft Notice</span>
+                        </button>
+                        <ArrowRightIcon className="sample-arrow" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1442,8 +1460,8 @@ export default function App() {
 
                   <button
                     type="button"
-                    className="btn-workspace-draft-action"
-                    onClick={() => setWorkspaceTab("draft")}
+                    className="btn-workspace-draft-action primary-gold"
+                    onClick={() => setShowDraftModal(true)}
                     title="Draft Evidence-Backed Legal Notice for this document"
                     id="btn-workspace-draft-action"
                   >
@@ -1523,6 +1541,28 @@ export default function App() {
                     <span>
                       Active Scope: <strong>{activeDoc?.title}</strong> ({activeDoc?.id}). Analysis is strictly bounded to this document without default-corpus cross-contamination.
                     </span>
+                  </div>
+
+                  {/* High-Visibility Draft Legal Document CTA Banner */}
+                  <div className="workspace-draft-cta-banner">
+                    <div className="draft-cta-left">
+                      <FileTextIcon className="cta-ico" />
+                      <div className="cta-text">
+                        <span className="cta-title">Evidence-Backed Legal Notice Drafting</span>
+                        <span className="cta-sub">
+                          Prepare a structured, lawyer-reviewable Legal Notice grounded strictly in operative clauses from <strong>{activeDoc?.title}</strong>.
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-draft-cta-action"
+                      id="btn-workspace-cta-draft"
+                      onClick={() => setShowDraftModal(true)}
+                    >
+                      <FileTextIcon />
+                      <span>Draft Legal Document</span>
+                    </button>
                   </div>
 
                   {/* Mode Selector Tabs: Inquiry vs Evidence-Backed Drafting */}
@@ -2248,6 +2288,377 @@ export default function App() {
             </div>
           )}
         </main>
+      )}
+
+      {/* ==================================================================== */}
+      {/* EVIDENCE-BACKED LEGAL NOTICE DRAFTING MODAL DIALOG                  */}
+      {/* ==================================================================== */}
+      {showDraftModal && (
+        <div
+          className="draft-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="draft-modal-heading"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDraftModal(false)
+          }}
+        >
+          <div className="draft-modal-container">
+            {/* Modal Header */}
+            <div className="draft-modal-header">
+              <div className="draft-modal-title-group">
+                <div className="draft-modal-title-row">
+                  <h3 id="draft-modal-heading" className="draft-modal-title">Draft Legal Document</h3>
+                  <span className="draft-modal-badge">Legal Notice</span>
+                </div>
+                <p className="draft-modal-subtitle">
+                  Operative clauses grounded in <strong>{activeDoc?.title || "Selected Agreement"}</strong> ({activeDoc?.id}).
+                </p>
+              </div>
+              <button
+                type="button"
+                className="draft-modal-close-btn"
+                onClick={() => setShowDraftModal(false)}
+                aria-label="Close drafting dialog"
+              >
+                <CrossIcon />
+              </button>
+            </div>
+
+            <div className="draft-modal-body">
+              {/* Preset Buttons */}
+              <div className="drafter-preset-buttons">
+                <button
+                  type="button"
+                  className="btn-drafter-preset"
+                  onClick={() => handleApplyPreset("spoilage")}
+                >
+                  Fill SLA/Spoilage Preset
+                </button>
+                <button
+                  type="button"
+                  className="btn-drafter-preset"
+                  onClick={() => handleApplyPreset("invoice")}
+                >
+                  Fill Overdue Invoice Preset
+                </button>
+              </div>
+
+              {/* Form Input Card */}
+              <section className="drafter-form-card" aria-label="Legal Notice Parameters">
+                <div className="drafter-input-grid">
+                  <div className="drafter-field-group full-width">
+                    <label className="drafter-field-label">
+                      <span>Document Type</span>
+                      <span className="drafter-field-sub">Operative Document Format</span>
+                    </label>
+                    <select
+                      className="drafter-text-input"
+                      value="legal_notice"
+                      disabled
+                      aria-label="Document Type Selection"
+                    >
+                      <option value="legal_notice">Legal Notice of Contractual Breach & Demand for Cure (Operative)</option>
+                    </select>
+                  </div>
+
+                  <div className="drafter-field-group">
+                    <label className="drafter-field-label">
+                      <span>Sender / Client Entity</span>
+                      <span className="drafter-field-sub">Claimant</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftSender}
+                      onChange={(e) => setDraftSender(e.target.value)}
+                      placeholder="e.g. Apex Biologics LLC"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group">
+                    <label className="drafter-field-label">
+                      <span>Recipient Entity</span>
+                      <span className="drafter-field-sub">Adverse Party</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftRecipient}
+                      onChange={(e) => setDraftRecipient(e.target.value)}
+                      placeholder="e.g. Polaris Cold-Chain Solutions Inc"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group full-width">
+                    <label className="drafter-field-label">
+                      <span>Recipient Registered Address</span>
+                      <span className="drafter-field-sub">Leave blank to insert placeholder</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftAddress}
+                      onChange={(e) => setDraftAddress(e.target.value)}
+                      placeholder="e.g. 100 Industrial Port Parkway, Anchorage, AK 99501"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group full-width">
+                    <label className="drafter-field-label">
+                      <span>Nature of Alleged Contractual Breach *</span>
+                      <span className="drafter-field-sub">Required</span>
+                    </label>
+                    <textarea
+                      className="drafter-textarea-input"
+                      rows={3}
+                      value={draftBreach}
+                      onChange={(e) => setDraftBreach(e.target.value)}
+                      placeholder="Describe the alleged breach (e.g. failure to deliver within 48-hour delivery window resulting in consignment spoilage)..."
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group">
+                    <label className="drafter-field-label">
+                      <span>Date of Formal Notice</span>
+                      <span className="drafter-field-sub">Optional</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftNoticeDate}
+                      onChange={(e) => setDraftNoticeDate(e.target.value)}
+                      placeholder="e.g. October 9, 2026"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group">
+                    <label className="drafter-field-label">
+                      <span>Date(s) of Alleged Incident</span>
+                      <span className="drafter-field-sub">Optional</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftIncidentDate}
+                      onChange={(e) => setDraftIncidentDate(e.target.value)}
+                      placeholder="e.g. October 4, 2026"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group">
+                    <label className="drafter-field-label">
+                      <span>Cure / Response Period (Days)</span>
+                      <span className="drafter-field-sub">Leave blank for contract default</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="drafter-text-input"
+                      value={draftCureDays}
+                      onChange={(e) => setDraftCureDays(e.target.value)}
+                      placeholder="e.g. 15 or 30"
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group full-width">
+                    <label className="drafter-field-label">
+                      <span>Demanded Remedy / Action Requested</span>
+                      <span className="drafter-field-sub">Optional</span>
+                    </label>
+                    <textarea
+                      className="drafter-textarea-input"
+                      rows={2}
+                      value={draftRemedy}
+                      onChange={(e) => setDraftRemedy(e.target.value)}
+                      placeholder="e.g. Full indemnification for cargo loss and delivery of replacement freight..."
+                      disabled={isDrafting}
+                    />
+                  </div>
+
+                  <div className="drafter-field-group full-width">
+                    <label className="drafter-field-label">
+                      <span>Additional Facts / Client Instructions</span>
+                      <span className="drafter-field-sub">Attributed explicitly as claimant assertions</span>
+                    </label>
+                    <textarea
+                      className="drafter-textarea-input"
+                      rows={2}
+                      value={draftExtraFacts}
+                      onChange={(e) => setDraftExtraFacts(e.target.value)}
+                      placeholder="e.g. Data logger confirmed temperatures exceeded 14°C for over 5 hours..."
+                      disabled={isDrafting}
+                    />
+                  </div>
+                </div>
+
+                <div className="drafter-submit-row">
+                  <button
+                    type="button"
+                    className="btn-generate-draft"
+                    onClick={handleGenerateDraft}
+                    disabled={isDrafting || !draftBreach.trim()}
+                    id="btn-modal-generate-draft"
+                  >
+                    <FileTextIcon />
+                    <span>{isDrafting ? "Retrieving Clauses & Structuring Draft…" : "Generate Evidence-Backed Draft"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-preview-clauses"
+                    onClick={handlePreviewClauses}
+                    disabled={isDrafting}
+                    id="btn-modal-preview-clauses"
+                    title="Identify and view operative clauses before generating"
+                  >
+                    <SearchMinusIcon />
+                    <span>Preview Operative Clauses</span>
+                  </button>
+
+                  <div className="draft-safeguard-badge">
+                    <ShieldCheckIcon />
+                    <span>No fabricated citations · Verbatim contract grounding · Lawyer review mandatory</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* Generated Draft Output Card */}
+              {draftResult && (
+                <section className="draft-output-card" aria-label="Generated Legal Notice Draft">
+                  {/* Mandatory Lawyer Review Banner */}
+                  <div className="draft-lawyer-review-banner" role="alert">
+                    <AlertTriangleIcon className="banner-alert-ico" />
+                    <div className="banner-content">
+                      <strong>*** DRAFT — REQUIRES LAWYER REVIEW ***</strong>
+                      <p>
+                        This document is an unexecuted work-product draft. It segregates contractually grounded terms
+                        from unverified factual assertions supplied by the client. It must be reviewed, verified,
+                        and approved by qualified legal counsel prior to formal delivery.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Missing Placeholders Warning */}
+                  {draftResult.missing_fields && draftResult.missing_fields.length > 0 && (
+                    <div className="missing-fields-box">
+                      <span className="missing-fields-title">
+                        ⚠ Missing Information Injected as Explicit Placeholders:
+                      </span>
+                      <div className="missing-fields-pills">
+                        {draftResult.missing_fields.map((f: string) => (
+                          <span key={f} className="missing-field-chip">
+                            [{f.toUpperCase()} REQUIRED]
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Evidence Gap Warning if Breach is Not Supported */}
+                  {draftResult.is_supported_by_contract === false && (
+                    <div className="missing-fields-box" style={{ borderColor: "#f87171", background: "rgba(239, 68, 68, 0.12)" }}>
+                      <span className="missing-fields-title" style={{ color: "#f87171" }}>
+                        ⚠ Contract Evidence Gap — Unsupported Notice:
+                      </span>
+                      <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#fca5a5", lineHeight: 1.5 }}>
+                        {draftResult.missing_evidence || draftResult.support_notes || "The selected agreement does not contain operative clauses governing this alleged breach. Counsel audit required."}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Split View */}
+                  <div className="draft-split-grid">
+                    {/* Left: Verified Grounded Clauses */}
+                    <div className="draft-evidence-panel">
+                      <div className="draft-panel-header">
+                        <span className="draft-panel-heading">
+                          <ShieldCheckIcon />
+                          <span>Contract Evidence ({draftResult.grounded_provisions?.length || 0} Clauses)</span>
+                        </span>
+                        <span className="clause-chunk-badge">{draftResult.source_doc_id || activeDocId}</span>
+                      </div>
+
+                      <div className="clauses-card-stack">
+                        {draftResult.grounded_provisions && draftResult.grounded_provisions.length > 0 ? (
+                          draftResult.grounded_provisions.map((item: any, idx: number) => (
+                            <div key={idx} className="grounded-clause-card">
+                              <div className="clause-card-meta">
+                                <span className="clause-card-title">{item.section_title}</span>
+                                <span className="clause-chunk-badge">{item.chunk_id}</span>
+                              </div>
+                              <blockquote className="clause-quote-text">
+                                "{item.quote_snippet}"
+                              </blockquote>
+                              {item.cure_period_hint && (
+                                <span className="clause-cure-hint">
+                                  ⏱ Detected cure period: {item.cure_period_hint}
+                                </span>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="drafter-subtitle">No specific contractual clauses retrieved.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Editable Draft Notice Area */}
+                    <div className="draft-editor-panel">
+                      <div className="draft-panel-header">
+                        <span className="draft-panel-heading">
+                          <FileTextIcon />
+                          <span>Legal Notice Draft (Editable)</span>
+                        </span>
+
+                        <div className="draft-editor-actions">
+                          <button
+                            type="button"
+                            className={`btn-draft-action ${copiedDraft ? "copied" : ""}`}
+                            onClick={handleCopyDraft}
+                            title="Copy draft to clipboard"
+                          >
+                            <CheckIcon />
+                            <span>{copiedDraft ? "Copied!" : "Copy Draft"}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-draft-action"
+                            onClick={handleDownloadDraft}
+                            title="Download as Markdown"
+                          >
+                            <ArrowRightIcon />
+                            <span>Download .md</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <textarea
+                        className="draft-editor-textarea"
+                        value={editableDraftText}
+                        onChange={(e) => setEditableDraftText(e.target.value)}
+                        rows={24}
+                        aria-label="Editable Legal Notice Text"
+                      />
+
+                      <div className="draft-meta-footer">
+                        <span>Word Count: {editableDraftText.trim().split(/\s+/).filter(Boolean).length} words</span>
+                        <span>Chars: {editableDraftText.length}</span>
+                        <span>Status: Pre-Execution Draft</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ==================================================================== */}
