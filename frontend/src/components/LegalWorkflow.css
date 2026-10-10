@@ -1,0 +1,257 @@
+/* Legal workflow prototype pages — reuses the navy / warm ivory / brass tokens from index.css */
+
+.wf-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  color: var(--legal-text-ivory);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wf-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wf-page-head h1 {
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  margin: 0 0 4px;
+  color: var(--legal-text-ivory);
+}
+
+.wf-sub, .wf-muted { color: var(--legal-text-secondary); margin: 0; font-size: 0.9rem; line-height: 1.5; }
+.wf-mono { font-family: var(--font-mono); font-size: 0.8rem; color: var(--legal-gold-light); white-space: nowrap; }
+.wf-text-danger { color: #f87171; }
+.wf-ok { color: var(--status-supported-text); font-size: 0.9rem; }
+.wf-empty { color: var(--legal-text-muted); font-style: italic; margin: 8px 0; }
+.wf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.wf-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.wf-btn {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--legal-gold-border);
+  background: var(--surface-card-elevated);
+  color: var(--legal-text-ivory);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background var(--trans-fast), border-color var(--trans-fast);
+}
+.wf-btn:hover:not(:disabled) { background: var(--surface-card-hover); border-color: var(--legal-gold-primary); }
+.wf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.wf-btn-primary { background: var(--legal-gold-primary); color: var(--legal-navy-950); border-color: var(--legal-gold-primary); font-weight: 600; }
+.wf-btn-primary:hover:not(:disabled) { background: var(--legal-gold-light); }
+.wf-btn-ghost { background: transparent; color: var(--legal-text-secondary); }
+.wf-btn-sm { min-height: 32px; padding: 4px 10px; font-size: 0.8rem; }
+
+.wf-btn:focus-visible, .wf-link:focus-visible, .wf-row-btn:focus-visible, .wf-chip:focus-visible,
+.wf-field input:focus-visible, .wf-field select:focus-visible, .wf-field textarea:focus-visible,
+.wf-mini select:focus-visible, .wf-mini input:focus-visible, .wf-input:focus-visible, .wf-check:focus-visible {
+  outline: 2px solid var(--legal-gold-light);
+  outline-offset: 2px;
+}
+
+.wf-link {
+  background: none;
+  border: none;
+  color: var(--legal-gold-light);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.wf-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wf-stat-num { font-family: var(--font-serif); font-size: 2.2rem; color: var(--legal-gold-light); line-height: 1; }
+.wf-stat-label { color: var(--legal-text-ivory); font-weight: 600; font-size: 0.92rem; }
+.wf-stat-foot { color: var(--legal-text-muted); font-size: 0.8rem; }
+
+.wf-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.wf-split { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
+
+.wf-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.wf-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.wf-card-head h2 { font-family: var(--font-serif); font-size: 1.15rem; margin: 0; color: var(--legal-text-ivory); }
+.wf-h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--legal-gold-primary); margin: 8px 0 0; }
+
+.wf-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wf-list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: var(--surface-inset);
+  border-radius: 6px;
+}
+.wf-row-title { flex: 1 1 auto; min-width: 0; color: var(--legal-text-parchment); font-size: 0.9rem; overflow-wrap: anywhere; }
+.wf-row-btn {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--surface-inset);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.wf-row-btn:hover, .wf-row-btn.active { border-color: var(--legal-gold-border); background: var(--surface-card-hover); }
+
+.wf-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.wf-badge-muted { color: var(--status-unverified-text); background: var(--status-unverified-bg); border-color: var(--status-unverified-border); }
+.wf-badge-ok { color: var(--status-supported-text); background: var(--status-supported-bg); border-color: var(--status-supported-border); }
+.wf-badge-warn { color: var(--status-conflicting-text); background: var(--status-conflicting-bg); border-color: var(--status-conflicting-border); }
+.wf-badge-pending { color: var(--status-insufficient-text); background: var(--status-insufficient-bg); border-color: var(--status-insufficient-border); }
+.wf-badge-danger { color: #fca5a5; background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.4); }
+
+.wf-form { display: flex; flex-direction: column; gap: 12px; }
+.wf-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.wf-form-inline { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.wf-grow { flex: 1 1 220px; }
+.wf-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; color: var(--legal-text-secondary); min-width: 0; }
+.wf-field input, .wf-field select, .wf-field textarea, .wf-mini select, .wf-mini input, .wf-input {
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--legal-gold-border);
+  background: var(--surface-inset);
+  color: var(--legal-text-ivory);
+  font: inherit;
+  font-size: 0.9rem;
+  color-scheme: dark;
+}
+.wf-field textarea { resize: vertical; }
+.wf-mini select, .wf-mini input { min-height: 32px; padding: 4px 8px; font-size: 0.8rem; }
+
+.wf-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.wf-chip {
+  min-height: 34px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--legal-gold-border);
+  background: transparent;
+  color: var(--legal-text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.wf-chip.active { background: var(--legal-gold-muted); color: var(--legal-gold-light); border-color: var(--legal-gold-primary); }
+
+.wf-task-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wf-task {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-left: 3px solid var(--legal-gold-dark);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wf-card .wf-task { background: var(--surface-inset); }
+.wf-task-overdue { border-left-color: #ef4444; }
+.wf-task-done { opacity: 0.65; }
+.wf-task-done .wf-task-title { text-decoration: line-through; }
+.wf-task-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wf-task-title { flex: 1 1 180px; min-width: 0; color: var(--legal-text-ivory); overflow-wrap: anywhere; }
+.wf-task-main .wf-check, .wf-task-main .wf-badge { flex-shrink: 0; }
+.wf-task-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wf-task-notes { margin: 0; font-size: 0.85rem; color: var(--legal-text-secondary); white-space: pre-wrap; }
+.wf-check { width: 20px; height: 20px; accent-color: var(--legal-gold-primary); cursor: pointer; }
+
+.wf-proto-note {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px dashed var(--legal-gold-border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--legal-text-muted);
+}
+
+.wf-form-inline .wf-grow { flex: 2 1 260px; }
+.wf-form-inline select { max-width: 260px; }
+.wf-list-row > .wf-row-title { flex: 1 1 0; }
+.wf-list-row > .wf-badge, .wf-list-row > .wf-btn, .wf-list-row > .wf-mono { flex-shrink: 0; }
+.wf-page-head .wf-actions { flex-shrink: 0; }
+
+/* Legal drafting page shell */
+.wf-drafting-source { display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.wf-drafting-source .wf-grow { flex: 1 1 360px; }
+.wf-drafting-source select { max-width: none; }
+.wf-drafting-source > .wf-muted { flex-basis: 100%; }
+.wf-drafting-body { display: flex; flex-direction: column; gap: 16px; }
+
+/* Drafter form on the full-width drafting page: party fields in halves, the three date/period fields in thirds */
+.wf-drafting-body .drafter-input-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: end; }
+.wf-drafting-body .drafter-field-group { grid-column: span 3; }
+.wf-drafting-body .drafter-field-group.full-width { grid-column: 1 / -1; }
+.wf-drafting-body .drafter-field-group:nth-child(6),
+.wf-drafting-body .drafter-field-group:nth-child(7),
+.wf-drafting-body .drafter-field-group:nth-child(8) { grid-column: span 2; }
+
+/* Top-bar tools (inside the app shell) */
+.nav-tools { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.btn-sample-action, .btn-primary-action { white-space: nowrap; }
+.preview-badge { white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 1400px) {
+  .jurisdiction-label { display: none; }
+}
+@media (max-width: 960px) {
+  .wf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wf-grid-2, .wf-split { grid-template-columns: 1fr; }
+  .wf-drafting-body .drafter-field-group,
+  .wf-drafting-body .drafter-field-group:nth-child(n) { grid-column: 1 / -1; }
+}
+
+@media (max-width: 520px) {
+  .wf-page { padding: 20px 16px 48px; }
+  .wf-stats { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-btn, .wf-row-btn { transition: none; }
+}

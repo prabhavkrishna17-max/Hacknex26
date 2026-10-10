@@ -1,0 +1,125 @@
+/*
+ * HNX design tokens — semantic + component layers.
+ * Primitive palette lives in index.css (--legal-*). This file maps it to purpose
+ * (design-system skill: primitive → semantic → component). New UI should use --hnx-* tokens.
+ */
+:root {
+  /* ---- Surfaces: 1 canvas · 2 sidebar · 3 panel · 4 raised/interactive · 5 overlay ---- */
+  --hnx-canvas: #080c15;
+  --hnx-sidebar: #0b111c;
+  --hnx-panel: #101827;
+  --hnx-panel-raised: #162033;
+  --hnx-panel-hover: #1b2740;
+  --hnx-overlay: #1a2436;
+  --hnx-inset: #0b111c;
+
+  /* Document reading surface (ivory paper, used only for legal text) */
+  --hnx-document: #f4f0e8;
+  --hnx-document-edge: #ddd4c2;
+  --hnx-document-ink: #1a2232;
+  --hnx-document-muted: #4f5a6e;
+  --hnx-document-mark: rgba(197, 160, 89, 0.32);
+
+  /* ---- Borders ---- */
+  --hnx-border: rgba(148, 163, 184, 0.14);
+  --hnx-border-strong: rgba(148, 163, 184, 0.26);
+  --hnx-border-accent: rgba(197, 160, 89, 0.5);
+
+  /* ---- Text (all ≥ 4.5:1 on --hnx-panel) ---- */
+  --hnx-text: #f4f0e8;
+  --hnx-text-2: #b9c1cd;
+  --hnx-text-3: #8d99ad;
+
+  /* ---- Accent: brass = emphasis / primary action only ---- */
+  --hnx-accent: #c5a059;
+  --hnx-accent-hover: #d6b574;
+  --hnx-accent-strong: #dfbe7c;
+  --hnx-accent-soft: rgba(197, 160, 89, 0.12);
+  --hnx-on-accent: #0b101c;
+  --hnx-focus: #dfbe7c;
+
+  /* ---- Evidence status (always paired with a text label) ---- */
+  --hnx-supported: #5cc59a;
+  --hnx-supported-bg: rgba(76, 181, 138, 0.12);
+  --hnx-partial: #6fb4ea;
+  --hnx-partial-bg: rgba(14, 165, 233, 0.12);
+  --hnx-conflicting: #b6a3f0;
+  --hnx-conflicting-bg: rgba(168, 85, 247, 0.12);
+  --hnx-insufficient: #e9b552;
+  --hnx-insufficient-bg: rgba(245, 158, 11, 0.12);
+  --hnx-unverified: #a3afc0;
+  --hnx-unverified-bg: rgba(148, 163, 184, 0.12);
+  --hnx-danger: #ef8a73;
+  --hnx-danger-bg: rgba(239, 68, 68, 0.12);
+
+  /* ---- Typography ---- */
+  --hnx-font-display: var(--font-serif);
+  --hnx-font-ui: var(--font-sans);
+  --hnx-font-mono: var(--font-mono);
+  --hnx-text-xs: 0.75rem;
+  --hnx-text-sm: 0.8125rem;
+  --hnx-text-base: 0.9375rem;
+  --hnx-text-md: 1rem;
+  --hnx-text-lg: 1.125rem;
+  --hnx-text-xl: 1.375rem;
+  --hnx-text-2xl: 1.75rem;
+  --hnx-text-3xl: 2.125rem;
+  --hnx-leading-tight: 1.2;
+  --hnx-leading: 1.5;
+  --hnx-leading-reading: 1.7;
+  --hnx-measure: 72ch;
+
+  /* ---- Spacing (4px scale) ---- */
+  --hnx-space-1: 4px;
+  --hnx-space-2: 8px;
+  --hnx-space-3: 12px;
+  --hnx-space-4: 16px;
+  --hnx-space-5: 20px;
+  --hnx-space-6: 24px;
+  --hnx-space-8: 32px;
+  --hnx-space-10: 40px;
+  --hnx-space-12: 48px;
+
+  /* ---- Radius & elevation ---- */
+  --hnx-radius-sm: 6px;
+  --hnx-radius-md: 10px;
+  --hnx-radius-lg: 14px;
+  --hnx-radius-pill: 999px;
+  --hnx-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --hnx-shadow-2: 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+  --hnx-shadow-3: 0 28px 70px -28px rgba(0, 0, 0, 0.85);
+  --hnx-shadow-paper: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 18px 40px -22px rgba(0, 0, 0, 0.75);
+
+  /* ---- Layout ---- */
+  --hnx-sidebar-w: 248px;
+  --hnx-rail-w: 76px;
+  --hnx-topbar-h: 60px;
+  --hnx-content-max: 1240px;
+  --hnx-page-pad: 32px;
+
+  /* ---- Motion (CSS side; Framer Motion uses src/motion.ts) ---- */
+  --hnx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hnx-dur-fast: 140ms;
+  --hnx-dur: 220ms;
+
+  /* ---- Component tokens ---- */
+  --btn-h: 40px;
+  --btn-h-sm: 32px;
+  --btn-radius: var(--hnx-radius-sm);
+  --panel-bg: var(--hnx-panel);
+  --panel-border: var(--hnx-border);
+  --panel-radius: var(--hnx-radius-md);
+  --field-bg: var(--hnx-inset);
+  --field-border: var(--hnx-border-strong);
+  --field-border-focus: var(--hnx-accent);
+}
+
+html {
+  scroll-padding-top: calc(var(--hnx-topbar-h) + 16px);
+}
+
+@media (max-width: 860px) {
+  :root {
+    --hnx-page-pad: 16px;
+  }
+}

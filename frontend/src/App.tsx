@@ -1,4 +1,14 @@
 import React, { useState, useEffect, useRef } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import {
+  DraftReviewPanel,
+  MattersPage,
+  OverviewPage,
+  TasksPage,
+  useWorkflowStore,
+} from "./components/LegalWorkflow"
+import { AppSidebar, AppTopBar, PageHeader, type AppView } from "./components/AppChrome"
+import { crossFade, dialogVariants, backdropVariants, disclosure, pageVariants, panelReveal } from "./motion"
 
 // ============================================================================
 // SVG ICONS (Dignified Legal & Interface Glyphs)
@@ -448,8 +458,17 @@ function FormattedAnswerText({
 // ============================================================================
 
 export default function App() {
-  // Navigation View: 'landing' (Lawyer Landing Page) | 'workspace' (Three-Pane Platform)
-  const [view, setView] = useState<"landing" | "workspace">("landing")
+  // Navigation View: 'landing' (Lawyer Landing Page) | 'workspace' (Contract Workspace) | 'drafting' (Legal Document Drafting)
+  const [view, setView] = useState<AppView>("landing")
+  const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false)
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null)
+
+  // Prototype workflow layer: matters, tasks and draft review records (metadata-only localStorage)
+  const workflow = useWorkflowStore()
+  const [selectedMatterId, setSelectedMatterId] = useState<string | null>(null)
+  const [matterCreateNonce, setMatterCreateNonce] = useState<number>(0)
+  const [draftMatterId, setDraftMatterId] = useState<string>("")
+  const [documentsLive, setDocumentsLive] = useState<boolean>(false)
 
   // Governing Law Jurisdiction
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>("United States")
@@ -477,7 +496,9 @@ export default function App() {
   // Workspace Tab: "inquiry" (Clause Analysis) | "draft" (Evidence-Backed Notice Drafter)
   const [workspaceTab, setWorkspaceTab] = useState<"inquiry" | "draft">("inquiry")
 
-  // Legal Notice Drafting State
+  // Legal Notice Drafting Dedicated Page State
+  const [draftDocId, setDraftDocId] = useState<string>("DOC-008")
+  const [draftDocType, setDraftDocType] = useState<string>("legal_notice")
   const [draftSender, setDraftSender] = useState<string>("Apex Biologics LLC")
   const [draftRecipient, setDraftRecipient] = useState<string>("Polaris Cold-Chain Solutions Inc")
   const [draftAddress, setDraftAddress] = useState<string>("100 Industrial Port Parkway, Anchorage, AK 99501")
@@ -498,6 +519,9 @@ export default function App() {
   const [editableDraftText, setEditableDraftText] = useState<string>("")
   const [copiedDraft, setCopiedDraft] = useState<boolean>(false)
   const [showDraftModal, setShowDraftModal] = useState<boolean>(false)
+  const [operativeClauses, setOperativeClauses] = useState<any[]>([])
+  const [isLoadingClauses, setIsLoadingClauses] = useState<boolean>(false)
+  const [draftErrorMessage, setDraftErrorMessage] = useState<string | null>(null)
 
   // Non-blocking Scroll Reveal Observer: Reveals cards smoothly as they enter viewport
   useEffect(() => {
@@ -547,6 +571,10 @@ export default function App() {
     }
   }, [view])
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [view])
+
   const queryInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -567,6 +595,7 @@ export default function App() {
             status: "Verified",
           }))
           setDocuments(mapped)
+          setDocumentsLive(true)
         }
       })
       .catch(() => {
@@ -592,8 +621,25 @@ export default function App() {
     setErrorMessage(null)
   }
 
+  // Open the dedicated Legal Drafting page, optionally for a specific source document / matter
+  const openDrafting = (docId?: string | null, matterId?: string) => {
+    if (docId && docId !== draftDocId) {
+      setDraftDocId(docId)
+      setDraftResult(null)
+      setEditableDraftText("")
+    }
+    if (matterId !== undefined) setDraftMatterId(matterId)
+    setView("drafting")
+  }
+
   // Process uploaded or dropped document
   const handleProcessFile = async (file: File) => {
+    setUploadNotice(null)
+    // The backend parses PDF (pypdf), plain text and Markdown; reject other types up front.
+    if (!/\.(pdf|txt|md)$/i.test(file.name)) {
+      setErrorMessage(`“${file.name}” is not a supported file. Upload a PDF, TXT or Markdown (.md) document.`)
+      return
+    }
     setIsUploading(true)
     setErrorMessage(null)
 
@@ -624,6 +670,9 @@ export default function App() {
         setActiveDocId(newDoc.id)
         setUserQuery("")
         setLiveResult(null)
+        setUploadNotice(
+          `Processed “${backendDoc.filename || file.name}”: ${backendDoc.chunks_indexed ?? "its"} passages indexed — ready for questions.`
+        )
       } else {
         const errJson = await res.json().catch(() => ({}))
         setErrorMessage(friendlyError(errJson.detail || `Upload failed (${res.status})`))
@@ -639,6 +688,8 @@ export default function App() {
     const files = e.target.files
     if (!files || files.length === 0) return
     handleProcessFile(files[0])
+    // Allow re-selecting the same file after a failed or repeated upload
+    e.target.value = ""
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -708,18 +759,50 @@ export default function App() {
     }
   }
 
+  // Load Operative Clauses for the Selected Document
+  const loadOperativeClauses = async (docId: string, q?: string) => {
+    if (!docId) {
+      setOperativeClauses([])
+      return
+    }
+    setIsLoadingClauses(true)
+    try {
+      const query = q?.trim() || "notice breach termination remedy cure liability"
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/draft/clauses?doc_id=${encodeURIComponent(docId)}&query=${encodeURIComponent(query)}`
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setOperativeClauses(data.clauses || [])
+      } else {
+        setOperativeClauses([])
+      }
+    } catch {
+      setOperativeClauses([])
+    } finally {
+      setIsLoadingClauses(false)
+    }
+  }
+
+  // Pre-load operative clauses when on drafting page or when draftDocId changes
+  useEffect(() => {
+    if (view === "drafting" && draftDocId) {
+      loadOperativeClauses(draftDocId, draftBreach)
+    }
+  }, [view, draftDocId])
+
   // Legal Notice Drafting Execution
   const handleGenerateDraft = async () => {
     if (!draftBreach.trim()) return
     setIsDrafting(true)
-    setErrorMessage(null)
+    setDraftErrorMessage(null)
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/draft/notice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          doc_id: activeDocId || undefined,
+          doc_id: draftDocId || activeDocId || undefined,
           selected_jurisdiction: selectedJurisdiction,
           sender_entity: draftSender || undefined,
           recipient_entity: draftRecipient || undefined,
@@ -737,46 +820,46 @@ export default function App() {
         const data = await res.json()
         setDraftResult(data)
         setEditableDraftText(data.draft_text)
+        setDraftErrorMessage(null)
       } else {
         const errJson = await res.json().catch(() => ({}))
-        setErrorMessage(friendlyError(errJson.detail || `Draft generation failed (${res.status})`))
+        setDraftErrorMessage(errJson.detail || `Draft generation failed (${res.status})`)
       }
     } catch (e: any) {
-      setErrorMessage(friendlyError(e?.message || "Failed to reach server for legal notice drafting"))
+      setDraftErrorMessage(e?.message || "Failed to reach server for legal notice drafting")
     } finally {
       setIsDrafting(false)
     }
   }
 
   const handlePreviewClauses = async () => {
-    try {
-      setIsDrafting(true)
-      const q = draftBreach.trim() || "notice breach termination remedy cure liability"
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/draft/clauses?doc_id=${encodeURIComponent(activeDocId || "")}&query=${encodeURIComponent(q)}`
-      )
-      if (res.ok) {
-        const data = await res.json()
-        setDraftResult((prev: any) => ({
-          ...(prev || {}),
-          grounded_provisions: data.clauses,
-          source_doc_id: data.doc_id,
-          doc_title: data.doc_title,
-          is_supported_by_contract: data.clauses && data.clauses.length > 0,
-        }))
-      }
-    } catch {
-      // Non-blocking preview
-    } finally {
-      setIsDrafting(false)
-    }
+    await loadOperativeClauses(draftDocId, draftBreach)
   }
 
-  const handleCopyDraft = () => {
+  const handleCopyDraft = async () => {
     if (!editableDraftText) return
-    navigator.clipboard.writeText(editableDraftText)
-    setCopiedDraft(true)
-    setTimeout(() => setCopiedDraft(false), 2200)
+    let copied = false
+    try {
+      await navigator.clipboard.writeText(editableDraftText)
+      copied = true
+    } catch {
+      // Clipboard API blocked (permissions / insecure context): fall back to a hidden textarea copy
+      const ta = document.createElement("textarea")
+      ta.value = editableDraftText
+      ta.setAttribute("readonly", "")
+      ta.style.position = "fixed"
+      ta.style.opacity = "0"
+      document.body.appendChild(ta)
+      ta.select()
+      copied = document.execCommand("copy")
+      document.body.removeChild(ta)
+    }
+    if (copied) {
+      setCopiedDraft(true)
+      setTimeout(() => setCopiedDraft(false), 2200)
+    } else {
+      setDraftErrorMessage("Copy failed: select the draft text and press Ctrl+C to copy it manually.")
+    }
   }
 
   const handleDownloadDraft = () => {
@@ -785,7 +868,7 @@ export default function App() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = `Legal_Notice_${activeDocId || "Draft"}.md`
+    link.download = draftDocId ? `Legal_Notice_${draftDocId}.md` : "Legal_Notice_Draft.md"
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -794,6 +877,8 @@ export default function App() {
 
   const handleApplyPreset = (type: "spoilage" | "invoice") => {
     if (type === "spoilage") {
+      setDraftDocId("DOC-008")
+      setSelectedJurisdiction("United States")
       setDraftSender("Apex Biologics LLC")
       setDraftRecipient("Polaris Cold-Chain Solutions Inc")
       setDraftAddress("100 Industrial Port Parkway, Anchorage, AK 99501")
@@ -810,6 +895,8 @@ export default function App() {
         "Data logger telemetry verified cargo temperature spiked to 14.2°C during customs detention."
       )
     } else {
+      setDraftDocId("DOC-006")
+      setSelectedJurisdiction("United States")
       setDraftSender("Service Provider Corporate Counsel")
       setDraftRecipient("Acme Logistics Client Corp")
       setDraftAddress("[RECIPIENT REGISTERED ADDRESS REQUIRED]")
@@ -827,11 +914,29 @@ export default function App() {
       )
     }
     setDraftResult(null)
+    setDraftErrorMessage(null)
+    setEditableDraftText("")
+  }
+
+  const handleClearDraftForm = () => {
+    setDraftSender("")
+    setDraftRecipient("")
+    setDraftAddress("")
+    setDraftBreach("")
+    setDraftIncidentDate("")
+    setDraftNoticeDate("October 9, 2026")
+    setDraftRemedy("")
+    setDraftCureDays("")
+    setDraftExtraFacts("")
+    setDraftResult(null)
+    setDraftErrorMessage(null)
     setEditableDraftText("")
   }
 
   // Active Document Data
   const activeDoc = documents.find((d) => d.id === activeDocId) || documents[0]
+  // Source document for the Legal Drafting page
+  const draftDoc = documents.find((d) => d.id === draftDocId)
 
   // Active Inspected Evidence Chunk details
   const effectiveCitationChunkId =
@@ -879,1066 +984,8 @@ export default function App() {
   // Selected jurisdiction data
   const currentJurData = JURISDICTIONS.find((j) => j.id === selectedJurisdiction) || JURISDICTIONS[0]
 
-  return (
-    <div className="legal-app-root">
-      {/* ==================================================================== */}
-      {/* GLOBAL PROFESSIONAL LEGAL HEADER                                    */}
-      {/* ==================================================================== */}
-      <header className="legal-top-navbar" role="banner">
-        <div className="nav-container">
-          {/* Brand Identity */}
-          <div className="brand-group" onClick={() => setView("landing")} role="button" tabIndex={0}>
-            <div className="brand-crest">
-              <ScalesOfJusticeIcon className="crest-svg" />
-            </div>
-            <div className="brand-text">
-              <span className="brand-title">HNX Legal Intelligence</span>
-              <span className="brand-tagline">Evidentiary Document Review</span>
-            </div>
-          </div>
-
-          {/* Navigation Tabs */}
-          <nav className="nav-tabs" aria-label="Main Navigation">
-            <button
-              type="button"
-              className={`nav-tab-button ${view === "landing" ? "active" : ""}`}
-              onClick={() => setView("landing")}
-            >
-              Overview & Principles
-            </button>
-            <button
-              type="button"
-              className={`nav-tab-button ${view === "workspace" ? "active" : ""}`}
-              onClick={() => setView("workspace")}
-            >
-              Contract Workspace
-            </button>
-          </nav>
-
-          {/* Right Action Tools */}
-          <div className="nav-tools">
-            {/* Governing Jurisdiction Selector (Active in Workspace View) */}
-            {view === "workspace" && (
-              <div className="jurisdiction-tool">
-                <div className="jurisdiction-label">
-                  <LockIcon className="tool-lock" />
-                  <span>Governing Law:</span>
-                </div>
-                <div className="select-box-wrap">
-                  <select
-                    id="governing-jurisdiction-select"
-                    className="jurisdiction-dropdown"
-                    value={selectedJurisdiction}
-                    onChange={(e) => setSelectedJurisdiction(e.target.value)}
-                    aria-label="Select governing jurisdiction law"
-                  >
-                    {JURISDICTIONS.map((jur) => (
-                      <option key={jur.id} value={jur.id}>
-                        [{jur.code}] {jur.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon className="dropdown-arrow" />
-                </div>
-              </div>
-            )}
-
-            {/* Quick Actions */}
-            <button
-              type="button"
-              className="btn-sample-action"
-              onClick={handleTrySample}
-              id="global-try-sample-btn"
-            >
-              Try a Sample
-            </button>
-
-            {view === "landing" && (
-              <button
-                type="button"
-                className="btn-primary-action"
-                onClick={handleOpenWorkspace}
-                id="global-analyze-btn"
-              >
-                Analyze a Document
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ==================================================================== */}
-      {/* VIEW 1: LAWYER-FIRST PRODUCTION LANDING PAGE                         */}
-      {/* ==================================================================== */}
-      {view === "landing" && (
-        <main className="landing-page-root">
-          {/* Subtle Archival Atmosphere Background Overlay */}
-          <div
-            className="legal-atmosphere-backdrop"
-            aria-hidden="true"
-          />
-
-          {/* Subtle Architectural / Column Lines */}
-          <div
-            className="legal-atmosphere-geometry"
-            aria-hidden="true"
-          />
-
-          {/* ================================================================ */}
-          {/* 1. HERO SECTION                                                  */}
-          {/* ================================================================ */}
-          <section className="legal-hero-section">
-            <div className="hero-layout-grid">
-              {/* Left Column: Authoritative Legal Copy */}
-              <div className="hero-copy-column">
-                <div className="hero-eyebrow">
-                  <span className="eyebrow-rule" />
-                  <span>HNX Legal Intelligence · Evidentiary Document Review</span>
-                </div>
-
-                <h1 className="hero-primary-headline">
-                  Document-Grounded <em>Legal Intelligence.</em>
-                </h1>
-
-                <p className="hero-supporting-lead">
-                  Uncompromising contractual verification for commercial agreements. Every substantive claim cites operative clauses with exact character spans; silence and conflicts are reported explicitly.
-                </p>
-
-                {/* Primary & Secondary Action Buttons */}
-                <div className="hero-cta-button-row">
-                  <button
-                    type="button"
-                    className="hero-btn-primary"
-                    onClick={() => {
-                      setView("workspace")
-                      setTimeout(() => fileInputRef.current?.click(), 100)
-                    }}
-                    id="hero-upload-document-cta"
-                  >
-                    <UploadCloudIcon className="btn-browse-ico" />
-                    <span>Upload Document</span>
-                    <ArrowRightIcon className="cta-arrow" />
-                  </button>
-
-                  <button
-                    type="button"
-                    className="hero-btn-secondary"
-                    onClick={handleTrySample}
-                    id="hero-explore-demo-cta"
-                  >
-                    <span>Explore Demonstration</span>
-                  </button>
-                </div>
-
-                {/* Editorial Trust Badges */}
-                <div className="hero-trust-badges">
-                  <div className="hero-trust-badge">
-                    <ShieldCheckIcon className="trust-badge-icon" />
-                    <span>Zero Speculation Policy</span>
-                  </div>
-                  <div className="hero-trust-badge">
-                    <FileTextIcon className="trust-badge-icon" />
-                    <span>Character-Span Citations</span>
-                  </div>
-                  <div className="hero-trust-badge">
-                    <SplitBranchIcon className="trust-badge-icon" />
-                    <span>CPDE Precedence Tracking</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Animated Balance Scale + Product Demonstration */}
-              <div className="hero-demonstration-column">
-                {/* Refined Animated Balance Scale Illustration */}
-                <BalanceScaleHero />
-
-                <div className="hero-preview-card" aria-label="Evidentiary Demonstration Preview">
-                  <div className="preview-card-header">
-                    <span className="preview-badge">Live Demonstration</span>
-                    <span className="preview-doc-ref">DOC-006 · Master Services Agreement</span>
-                  </div>
-
-                  <div className="preview-stage-group">
-                    {/* Stage 1: Question */}
-                    <div className="preview-stage">
-                      <span className="stage-label">Question</span>
-                      <p className="preview-question-text">
-                        "Who can terminate this agreement?"
-                      </p>
-                    </div>
-
-                    {/* Stage 2: Answer with Status */}
-                    <div className="preview-stage preview-stage-answer">
-                      <div className="stage-label-row">
-                        <span className="stage-label">Answer</span>
-                        <span className="stage-supported-pill">
-                          <CheckIcon className="pill-check-ico" />
-                          Supported by source
-                        </span>
-                      </div>
-                      <p className="preview-answer-text">
-                        Either party may terminate the agreement upon thirty (30) days prior written notice.
-                      </p>
-                    </div>
-
-                    {/* Stage 3: Source */}
-                    <div className="preview-stage">
-                      <span className="stage-label">Source</span>
-                      <p className="preview-source-text">
-                        Master Services Agreement · Section 12 · Page 8
-                      </p>
-                    </div>
-
-                    {/* Stage 4: Exact Evidence */}
-                    <div className="preview-stage preview-stage-quote">
-                      <span className="stage-label">Exact evidence</span>
-                      <blockquote className="preview-quote-body">
-                        "Either party may terminate this Agreement without cause upon <mark>thirty (30) days</mark> prior written notice..."
-                      </blockquote>
-                    </div>
-                  </div>
-
-                  <div className="preview-card-footer">
-                    <button
-                      type="button"
-                      className="preview-demo-action"
-                      onClick={handleTrySample}
-                    >
-                      <span>Explore this live in the workspace →</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ================================================================ */}
-          {/* 2. HOW IT WORKS                                                  */}
-          {/* ================================================================ */}
-          <section className="legal-how-it-works-section">
-            <div className="section-header-centered">
-              <span className="section-pre-title">How it works</span>
-              <h2 className="section-main-title">Three Steps to Evidentiary Clarity</h2>
-              <p className="section-lead-text">
-                Designed for legal workflows: upload documents, inquire naturally, and inspect verbatim proof.
-              </p>
-            </div>
-
-            <div className="how-it-works-grid">
-              <div className="how-step-card reveal-on-scroll stagger-1">
-                <div className="how-step-index">1</div>
-                <h3 className="how-step-title">Upload a document</h3>
-                <p className="how-step-desc">
-                  Load commercial contracts, Master Services Agreements, or schedules in PDF, DOCX, or text format.
-                </p>
-              </div>
-
-              <div className="how-step-card reveal-on-scroll stagger-2">
-                <div className="how-step-index">2</div>
-                <h3 className="how-step-title">Ask your question</h3>
-                <p className="how-step-desc">
-                  Inquire about termination triggers, liability carveouts, or obligations in plain legal English.
-                </p>
-              </div>
-
-              <div className="how-step-card reveal-on-scroll stagger-3">
-                <div className="how-step-index">3</div>
-                <h3 className="how-step-title">Review the evidence</h3>
-                <p className="how-step-desc">
-                  Every material claim connects directly to verbatim contractual clauses, section numbers, and page references.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* ================================================================ */}
-          {/* 3. BUILT FOR LEGAL REVIEW                                        */}
-          {/* ================================================================ */}
-          <section className="legal-capabilities-section">
-            <div className="section-header-centered">
-              <span className="section-pre-title">Built for legal review</span>
-              <h2 className="section-main-title">Forensic Contract Intelligence</h2>
-              <p className="section-lead-text">
-                Engineered specifically for transactional attorneys, in-house counsel, and contract review teams.
-              </p>
-            </div>
-
-            <div className="capabilities-grid">
-              <div className="capability-card reveal-on-scroll stagger-1">
-                <div className="cap-icon-box">
-                  <FileTextIcon className="cap-svg" />
-                </div>
-                <div className="cap-content">
-                  <h3 className="cap-title">Contract Review</h3>
-                  <p className="cap-desc">
-                    Find relevant clauses, obligations, exceptions, and related provisions across single or multi-part agreements.
-                  </p>
-                </div>
-              </div>
-
-              <div className="capability-card reveal-on-scroll stagger-2">
-                <div className="cap-icon-box">
-                  <ShieldCheckIcon className="cap-svg" />
-                </div>
-                <div className="cap-content">
-                  <h3 className="cap-title">Evidence-Grounded Answers</h3>
-                  <p className="cap-desc">
-                    Trace important claims to the exact source passage. Avoid unsupported claims with sentence-level verification.
-                  </p>
-                </div>
-              </div>
-
-              <div className="capability-card reveal-on-scroll stagger-3">
-                <div className="cap-icon-box">
-                  <SearchMinusIcon className="cap-svg" />
-                </div>
-                <div className="cap-content">
-                  <h3 className="cap-title">Missing Evidence</h3>
-                  <p className="cap-desc">
-                    Know when the document does not establish an answer. The system identifies silence rather than inventing terms.
-                  </p>
-                </div>
-              </div>
-
-              <div className="capability-card reveal-on-scroll stagger-4">
-                <div className="cap-icon-box">
-                  <SplitBranchIcon className="cap-svg" />
-                </div>
-                <div className="cap-content">
-                  <h3 className="cap-title">Related Provisions</h3>
-                  <p className="cap-desc">
-                    Follow explicit legal references between clauses, tracking <em>notwithstanding</em> overrides and schedule precedence.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ================================================================ */}
-          {/* 4. TRUST / DIFFERENTIATOR: INSPECT THE EVIDENCE                   */}
-          {/* ================================================================ */}
-          <section className="legal-differentiator-section">
-            <div className="section-header-centered">
-              <span className="section-pre-title">Evidentiary audit trail</span>
-              <h2 className="section-main-title">Don't just get an answer. Inspect the evidence.</h2>
-              <p className="section-lead-text">
-                Generic AI summarizes without proof. HNX connects every substantive assertion directly to its operative contractual clause.
-              </p>
-            </div>
-
-            <div className="differentiator-chain-wrapper">
-              <div className="audit-step-block audit-claim-block reveal-on-scroll stagger-1">
-                <div className="audit-step-header">
-                  <span className="audit-step-tag">Claim</span>
-                  <span className="audit-status-tag">
-                    <CheckIcon className="pill-check-ico" />
-                    Supported by Document Evidence
-                  </span>
-                </div>
-                <p className="audit-claim-text">
-                  Customer liability for data security incidents is capped at two times annual fees, overriding the standard contract cap.
-                </p>
-              </div>
-
-              <div className="chain-connector">
-                <span className="connector-text">Traced to operative source ↓</span>
-              </div>
-
-              <div className="audit-step-block audit-source-block reveal-on-scroll stagger-2">
-                <div className="audit-step-header">
-                  <span className="audit-step-tag">Source</span>
-                  <span className="audit-source-name">Data Protection Addendum (DPA)</span>
-                </div>
-                <div className="audit-source-details">
-                  <span className="source-chip">Section 8.2</span>
-                  <span className="source-chip">Page 6</span>
-                  <span className="source-chip">Precedence Clause</span>
-                </div>
-              </div>
-
-              <div className="chain-connector">
-                <span className="connector-text">Exact contractual language ↓</span>
-              </div>
-
-              <div className="audit-step-block audit-evidence-block reveal-on-scroll stagger-3">
-                <div className="audit-step-header">
-                  <span className="audit-step-tag">Exact evidence</span>
-                  <span className="audit-verbatim-tag">Verbatim contract text</span>
-                </div>
-                <blockquote className="audit-evidence-quote">
-                  "Notwithstanding Section 9.1 (Limitation of Liability) of the Master Agreement, Provider's aggregate liability for Data Protection Breaches under this Addendum shall not exceed <mark>two (2) times the total fees paid</mark> by Customer in the preceding twelve (12) months."
-                </blockquote>
-                <div className="audit-rel-notice">
-                  <SplitBranchIcon className="rel-ico" />
-                  <span><strong>Follow Related Provisions:</strong> Express <code>notwithstanding</code> override modifies Master Agreement § 9.1 general cap.</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ================================================================ */}
-          {/* 5. CALL TO ACTION                                                */}
-          {/* ================================================================ */}
-          <section className="legal-bottom-cta-section">
-            <div className="cta-box-card reveal-scale">
-              <div className="cta-content">
-                <h2 className="cta-headline">Ready to review agreements with evidentiary certainty?</h2>
-                <p className="cta-sub">
-                  Experience commercial contract review where every answer shows its evidence and silence is explicitly noted.
-                </p>
-                <div className="cta-buttons">
-                  <button
-                    type="button"
-                    className="hero-btn-primary"
-                    onClick={handleOpenWorkspace}
-                  >
-                    <span>Analyze a Document</span>
-                    <ArrowRightIcon className="cta-arrow" />
-                  </button>
-                  <button
-                    type="button"
-                    className="hero-btn-secondary"
-                    onClick={handleTrySample}
-                  >
-                    <span>Try a Sample</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        </main>
-      )}
-
-      {/* ==================================================================== */}
-      {/* VIEW 2: LAWYER-FIRST CONTRACT WORKSPACE                             */}
-      {/* ==================================================================== */}
-      {view === "workspace" && (
-        <main className="workspace-view-root">
-          {/* STATE A: NO ACTIVE DOCUMENT -> MAJOR PRIMARY INTAKE EXPERIENCE */}
-          {!activeDocId ? (
-            <div className="workspace-intake-container">
-              <div className="intake-header">
-                <div className="intake-crest">
-                  <ScalesOfJusticeIcon className="intake-crest-svg" />
-                </div>
-                <h1 className="intake-title">Analyze a Legal Document</h1>
-                <p className="intake-subtitle">
-                  Upload a contract, case file, judgment, notice, or other legal document to begin evidentiary review.
-                </p>
-              </div>
-
-              {/* Large Centered Intake Dropzone */}
-              <div
-                className={`intake-dropzone-card ${isDragging ? "drag-active" : ""}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <div className="dropzone-cloud-icon-box">
-                  <UploadCloudIcon className="dropzone-cloud-ico" />
-                </div>
-
-                <h2 className="dropzone-main-label">Upload your document</h2>
-                <p className="dropzone-hint">
-                  Drag & drop PDF here, or choose from your computer
-                </p>
-                <p className="dropzone-formats">
-                  Accepted formats: PDF, Word (DOCX), TXT, Markdown
-                </p>
-
-                <div className="dropzone-button-row">
-                  <button
-                    type="button"
-                    className="btn-intake-browse"
-                    onClick={() => fileInputRef.current?.click()}
-                    id="intake-choose-pdf-btn"
-                  >
-                    <FileTextIcon className="btn-browse-ico" />
-                    <span>Choose Document</span>
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.docx,.txt,.md"
-                    style={{ display: "none" }}
-                    onChange={handleFileUpload}
-                  />
-                </div>
-
-                {isUploading && (
-                  <div className="intake-uploading-indicator">
-                    <span className="button-spinner" />
-                    <span>Analyzing and indexing document structure…</span>
-                  </div>
-                )}
-
-                {/* Or Try Verified Sample Preset */}
-                <div className="intake-sample-divider">
-                  <span className="divider-line" />
-                  <span className="divider-text">or try a verified sample</span>
-                  <span className="divider-line" />
-                </div>
-
-                <div className="intake-samples-grid">
-                  {documents.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="intake-sample-card"
-                      onClick={() => {
-                        setActiveDocId(doc.id)
-                        setUserQuery("Who can terminate this agreement?")
-                      }}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <div className="sample-card-left">
-                        <span className="sample-dot">●</span>
-                        <div className="sample-text-group">
-                          <span className="sample-title">{doc.title}</span>
-                          <span className="sample-meta">{doc.size || "32 KB"} · Ready for analysis</span>
-                        </div>
-                      </div>
-                      <div className="sample-card-actions">
-                        <button
-                          type="button"
-                          className="btn-sample-draft"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setActiveDocId(doc.id)
-                            setShowDraftModal(true)
-                          }}
-                          title={`Draft Legal Document for ${doc.title}`}
-                          id={`btn-sample-draft-${doc.id}`}
-                        >
-                          <FileTextIcon className="btn-mini-ico" />
-                          <span>Draft Notice</span>
-                        </button>
-                        <ArrowRightIcon className="sample-arrow" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* STATE B: ACTIVE DOCUMENT -> FOCUSED ANALYSIS WORKSPACE */
-            <div className="workspace-focused-root">
-              {/* TOP: Active Document & Controls Bar */}
-              <header className="workspace-active-doc-bar">
-                <div className="active-doc-left">
-                  <span className="doc-active-indicator">●</span>
-                  <div className="active-doc-title-group">
-                    <h2 className="active-doc-heading">
-                      {activeDoc?.title || "Master Cloud Services Agreement"}
-                    </h2>
-                    <div className="active-doc-metadata-row">
-                      <span>{activeDoc?.size || "32 KB"}</span>
-                      <span className="meta-sep">·</span>
-                      <span>{activeDoc?.sections || 6} Operative Sections</span>
-                      <span className="meta-sep">·</span>
-                      <span>Governing Law: {currentJurData.label} [{currentJurData.code}]</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="active-doc-actions">
-                  <div className="jurisdiction-select-wrap">
-                    <select
-                      id="governing-jurisdiction-select"
-                      className="workspace-jurisdiction-select"
-                      value={selectedJurisdiction}
-                      onChange={(e) => setSelectedJurisdiction(e.target.value)}
-                      aria-label="Governing Law Jurisdiction"
-                    >
-                      {JURISDICTIONS.map((jur) => (
-                        <option key={jur.id} value={jur.id}>
-                          [{jur.code}] {jur.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn-workspace-draft-action primary-gold"
-                    onClick={() => setShowDraftModal(true)}
-                    title="Draft Evidence-Backed Legal Notice for this document"
-                    id="btn-workspace-draft-action"
-                  >
-                    <FileTextIcon className="btn-ico" />
-                    <span>Draft Legal Document</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-workspace-switch-doc"
-                    onClick={() => setActiveDocId(null)}
-                    title="Switch or upload another document"
-                  >
-                    <UploadCloudIcon className="btn-ico" />
-                    <span>Switch / Add Document</span>
-                  </button>
-                </div>
-              </header>
-
-              {/* MAIN WORKSPACE: Compact Left Document Navigator + Center Analysis Stage */}
-              <div className="workspace-main-layout">
-                {/* LEFT: Compact Document Navigator */}
-                <aside className="workspace-compact-sidebar">
-                  <div className="sidebar-header-row">
-                    <span className="sidebar-heading">Documents</span>
-                    <button
-                      type="button"
-                      className="btn-sidebar-add-doc"
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Upload document"
-                    >
-                      + Add document
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.docx,.txt,.md"
-                      style={{ display: "none" }}
-                      onChange={handleFileUpload}
-                    />
-                  </div>
-
-                  <div className="compact-docs-list" role="listbox" aria-label="Loaded legal documents">
-                    {documents.map((d) => {
-                      const isActive = d.id === activeDocId
-                      return (
-                        <button
-                          key={d.id}
-                          type="button"
-                          className={`compact-doc-item ${isActive ? "active-doc" : ""}`}
-                          onClick={() => {
-                            setActiveDocId(d.id)
-                            setLiveResult(null)
-                            setErrorMessage(null)
-                          }}
-                          role="option"
-                          aria-selected={isActive}
-                        >
-                          <span className={`doc-status-bullet ${isActive ? "bullet-active" : ""}`}>
-                            {isActive ? "●" : "○"}
-                          </span>
-                          <div className="compact-doc-info">
-                            <span className="compact-doc-title">{d.title}</span>
-                            <span className="compact-doc-sub">{d.size || "32 KB"} · Ready</span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </aside>
-
-                {/* CENTER: Question Area → Loading → Answer → Evidence */}
-                <main className="workspace-center-stage">
-                  {/* Document Scope Banner */}
-                  <div className="workspace-scope-banner">
-                    <ShieldCheckIcon className="trust-badge-icon" />
-                    <span>
-                      Active Scope: <strong>{activeDoc?.title}</strong> ({activeDoc?.id}). Analysis is strictly bounded to this document without default-corpus cross-contamination.
-                    </span>
-                  </div>
-
-                  {/* High-Visibility Draft Legal Document CTA Banner */}
-                  <div className="workspace-draft-cta-banner">
-                    <div className="draft-cta-left">
-                      <FileTextIcon className="cta-ico" />
-                      <div className="cta-text">
-                        <span className="cta-title">Evidence-Backed Legal Notice Drafting</span>
-                        <span className="cta-sub">
-                          Prepare a structured, lawyer-reviewable Legal Notice grounded strictly in operative clauses from <strong>{activeDoc?.title}</strong>.
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-draft-cta-action"
-                      id="btn-workspace-cta-draft"
-                      onClick={() => setShowDraftModal(true)}
-                    >
-                      <FileTextIcon />
-                      <span>Draft Legal Document</span>
-                    </button>
-                  </div>
-
-                  {/* Mode Selector Tabs: Inquiry vs Evidence-Backed Drafting */}
-                  <div className="workspace-tab-bar" role="tablist">
-                    <button
-                      type="button"
-                      className={`workspace-tab-btn ${workspaceTab === "inquiry" ? "active" : ""}`}
-                      onClick={() => setWorkspaceTab("inquiry")}
-                      id="workspace-tab-inquiry-btn"
-                      role="tab"
-                      aria-selected={workspaceTab === "inquiry"}
-                    >
-                      <SearchMinusIcon className="tab-ico" />
-                      <span>Clause Analysis & Inquiries</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`workspace-tab-btn ${workspaceTab === "draft" ? "active" : ""}`}
-                      onClick={() => setWorkspaceTab("draft")}
-                      id="workspace-tab-draft-btn"
-                      role="tab"
-                      aria-selected={workspaceTab === "draft"}
-                    >
-                      <FileTextIcon className="tab-ico" />
-                      <span>Draft Legal Notice (Evidence-Backed)</span>
-                      <span className="tab-badge-new">NEW</span>
-                    </button>
-                  </div>
-
-                  {/* Error Notification */}
-                  {errorMessage && (
-                    <div className="error-callout-banner" role="alert">
-                      <AlertTriangleIcon className="err-ico" />
-                      <div className="err-text">{errorMessage}</div>
-                      <button
-                        type="button"
-                        className="err-close"
-                        onClick={() => setErrorMessage(null)}
-                        aria-label="Dismiss error notice"
-                      >
-                        <CrossIcon />
-                      </button>
-                    </div>
-                  )}
-
-                  {workspaceTab === "inquiry" && (
-                    <>
-                      {/* 1. Question Area */}
-                      <section className="workspace-question-section">
-                        <label htmlFor="legal-inquiry-input" className="question-section-label">
-                          Ask about this document
-                        </label>
-
-                        <div className="question-input-wrapper">
-                          <input
-                            ref={queryInputRef}
-                            id="legal-inquiry-input"
-                            type="text"
-                            className="question-input-field"
-                            value={userQuery}
-                            onChange={(e) => setUserQuery(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !isAnalyzing) handleRunAnalysis()
-                            }}
-                            placeholder="What would you like to know about this document?"
-                            disabled={isAnalyzing}
-                            aria-label="What would you like to know about this document?"
-                          />
-                          <button
-                            type="button"
-                            className="btn-question-ask"
-                            onClick={() => handleRunAnalysis()}
-                            disabled={isAnalyzing || !userQuery.trim()}
-                            id="analyze-document-submit-btn"
-                          >
-                            {isAnalyzing ? "Checking…" : "Ask"}
-                          </button>
-                        </div>
-
-                        <div className="question-suggestions-row">
-                          <span className="suggestions-lead">Try asking:</span>
-                          {SUGGESTIONS.map((s) => (
-                            <button
-                              key={s}
-                              type="button"
-                              className="suggestion-link-btn"
-                              onClick={() => {
-                                setUserQuery(s)
-                                queryInputRef.current?.focus()
-                              }}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-
-                      {/* Honest Loading State (Real stages, no fake percentages) */}
-                      {isAnalyzing && (
-                        <div className="honest-loading-panel" role="status" aria-live="polite">
-                          <div className="loading-spinner-ring" />
-                      <div className="loading-steps-stack">
-                        <span className="loading-active-step">{analysisStage}</span>
-                        <div className="loading-stages-trail">
-                          <span className={`stage-dot ${analysisStage === "Analyzing document..." ? "current" : "done"}`}>
-                            Analyzing document
-                          </span>
-                          <span className="stage-sep">→</span>
-                          <span className={`stage-dot ${analysisStage === "Finding relevant provisions..." ? "current" : analysisStage.includes("Checking") || analysisStage.includes("Preparing") ? "done" : ""}`}>
-                            Finding relevant provisions
-                          </span>
-                          <span className="stage-sep">→</span>
-                          <span className={`stage-dot ${analysisStage === "Checking source evidence..." ? "current" : analysisStage.includes("Preparing") ? "done" : ""}`}>
-                            Checking source evidence
-                          </span>
-                          <span className="stage-sep">→</span>
-                          <span className={`stage-dot ${analysisStage === "Preparing answer..." ? "current" : ""}`}>
-                            Preparing answer
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 2. Answer & Evidence Area */}
-                  {liveResult && !isAnalyzing && (
-                    <article className="workspace-answer-article" aria-label="Grounded Legal Analysis">
-                      {/* Answer Header & Status */}
-                      <div className="answer-header-row">
-                        <h3 className="answer-main-heading">Answer</h3>
-                        <span className={`answer-status-pill tone-${liveResult.evidence_state?.toLowerCase() || (liveResult.is_abstention ? "insufficient" : "supported")}`}>
-                          {liveResult.evidence_state === "INSUFFICIENT" || liveResult.is_abstention ? (
-                            <>
-                              <SearchMinusIcon className="pill-ico" />
-                              <span>INSUFFICIENT · Evidence Not Established</span>
-                            </>
-                          ) : liveResult.evidence_state === "CONFLICTING" ? (
-                            <>
-                              <SplitBranchIcon className="pill-ico" />
-                              <span>CONFLICTING · Contradiction Identified</span>
-                            </>
-                          ) : liveResult.evidence_state === "PARTIAL" ? (
-                            <>
-                              <AlertTriangleIcon className="pill-ico" />
-                              <span>PARTIAL · Select Provisions Grounded</span>
-                            </>
-                          ) : liveResult.evidence_state === "UNVERIFIED" ? (
-                            <>
-                              <LockIcon className="pill-ico" />
-                              <span>UNVERIFIED · Verification Pending</span>
-                            </>
-                          ) : (
-                            <>
-                              <CheckIcon className="pill-ico" />
-                              <span>SUPPORTED · Fully Grounded</span>
-                            </>
-                          )}
-                        </span>
-                      </div>
-
-                      {/* Formatted Answer Body */}
-                      <div className="answer-body-content">
-                        <FormattedAnswerText
-                          rawText={liveResult.answer_text}
-                          evidenceList={liveResult.evidence || []}
-                          documents={documents}
-                          onSelectChunk={(cid) => setSelectedCitationChunkId(cid)}
-                        />
-                        {!liveResult.is_abstention && (
-                          <div className="answer-draft-bridge-row">
-                            <button
-                              type="button"
-                              className="btn-bridge-to-draft"
-                              onClick={() => {
-                                setWorkspaceTab("draft")
-                                setDraftBreach(`Alleged non-compliance regarding ${userQuery || "contractual obligations"}`)
-                              }}
-                              id="btn-bridge-to-draft"
-                              title="Prepare an evidence-backed formal notice based on this finding"
-                            >
-                              <FileTextIcon className="btn-ico" />
-                              <span>Draft Legal Notice From This Finding →</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* In case of Insufficient Evidence / Abstention */}
-                      {(liveResult.evidence_state === "INSUFFICIENT" || liveResult.is_abstention) && (
-                        <div className="insufficient-evidence-callout">
-                          <div className="insufficient-header">
-                            <SearchMinusIcon className="insufficient-ico" />
-                            <h4>Evidence Not Found — Refusal to Speculate</h4>
-                          </div>
-                          <p className="insufficient-body">
-                            {liveResult.abstention_reason ||
-                              "The provided agreements do not contain evidence to establish this rule. The platform strictly refuses to speculate or invent contractual terms."}
-                          </p>
-                          {liveResult.evidence && liveResult.evidence.length > 0 && (
-                            <div className="closest-passages-box">
-                              <span className="closest-title">Closest Candidate Passages Checked (Verify Silence):</span>
-                              <div className="closest-list">
-                                {liveResult.evidence.slice(0, 2).map((ev) => (
-                                  <div
-                                    key={ev.chunk_id}
-                                    className="closest-item"
-                                    onClick={() => setSelectedCitationChunkId(ev.chunk_id)}
-                                  >
-                                    <span className="closest-sec">{ev.document_title} · {ev.section}</span>
-                                    <span className="closest-preview">{ev.text.slice(0, 140)}…</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* In case of Conflicting Provisions */}
-                      {liveResult.evidence_state === "CONFLICTING" && (
-                        <div className="conflict-provisions-section">
-                          <div className="conflict-section-header">
-                            <h4>Conflicting Contractual Terms</h4>
-                            <span>Both provisions shown below; neither was assumed for you.</span>
-                          </div>
-                          <div className="conflict-columns-grid">
-                            {liveResult.citations.slice(0, 2).map((cit, idx) => (
-                              <div key={idx} className={`conflict-card-col source-${idx === 0 ? "a" : "b"}`}>
-                                <span className="source-tag">{idx === 0 ? "Provision A" : "Provision B"}</span>
-                                <div className="conflict-claim">{cit.claim}</div>
-                                <blockquote className="conflict-quote">"{cit.quote_snippet || cit.claim}"</blockquote>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Evidence Supporting This Answer */}
-                      {(!liveResult.is_abstention && liveResult.evidence_state !== "INSUFFICIENT") && (
-                        <section className="answer-evidence-section">
-                          <div className="evidence-section-header">
-                            <h4 className="evidence-section-title">Evidence supporting this answer</h4>
-                            {liveResult.citations && liveResult.citations.length > 1 && (
-                              <div className="evidence-sources-nav">
-                                <span className="sources-count-text">Sources ({liveResult.citations.length}):</span>
-                                {liveResult.citations.map((c, idx) => {
-                                  const isSelected = (selectedCitationChunkId === c.chunk_id) || (!selectedCitationChunkId && idx === 0)
-                                  const ev = liveResult.evidence?.find((e) => e.chunk_id === c.chunk_id)
-                                  const doc = documents.find((d) => d.id === c.chunk_id.split("#")[0])
-                                  const docTitle = doc?.title || ev?.document_title || `Source ${idx + 1}`
-                                  const sec = ev?.section?.match(/(?:Section|§)?\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1] || ""
-                                  return (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      className={`source-chip-toggle ${isSelected ? "active" : ""}`}
-                                      onClick={() => setSelectedCitationChunkId(c.chunk_id)}
-                                    >
-                                      <span>{idx + 1}. {docTitle.split(" ")[0]} {sec ? `§ ${sec}` : ""}</span>
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Active Source Card */}
-                          <div className="evidence-primary-card">
-                            <div className="source-location-row">
-                              <div className="source-doc-info">
-                                <FileTextIcon className="source-doc-ico" />
-                                <span className="source-doc-name">{activeEvidenceDocName}</span>
-                                <span className="source-meta-sep">·</span>
-                                <span className="source-sec-name">{activeEvidenceSection}</span>
-                                <span className="source-meta-sep">·</span>
-                                <span className="source-page-name">{activeEvidencePage}</span>
-                              </div>
-                              <span className="source-verified-badge">✓ Checked against source</span>
-                            </div>
-
-                            <div className="exact-evidence-block">
-                              <span className="exact-evidence-label">Exact evidence:</span>
-                              <blockquote className="exact-evidence-quote">
-                                "{activeQuoteSnippet}"
-                              </blockquote>
-                            </div>
-
-                            {/* Related Provision (Cross-reference / Overrides) */}
-                            {activeRelationship && (
-                              <div className="related-provision-box">
-                                <div className="rel-prov-header">
-                                  <SplitBranchIcon className="rel-ico" />
-                                  <span className="rel-prov-label">Related provision</span>
-                                </div>
-                                <div className="rel-prov-content">
-                                  <span className="rel-prov-title">
-                                    {activeRelationship.target_section || `Section ${activeRelationship.referenced_section}`} in {activeRelationship.target_doc_title}
-                                  </span>
-                                  <span className="rel-prov-relation">
-                                    ↳ Related through: <code>"{activeRelationship.operator || "notwithstanding"}"</code> clause — {activeRelationship.relation === "OVERRIDE" ? "accelerated terms override standard provision." : "cross-referenced provision."}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Progressive Disclosure Action Row */}
-                            <div className="evidence-footer-actions">
-                              <button
-                                type="button"
-                                className="btn-expand-context"
-                                onClick={() => setShowFullContext((prev) => !prev)}
-                              >
-                                <span>{showFullContext ? "Hide surrounding document context ▲" : "View surrounding document context ▼"}</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                className="btn-expand-context btn-tech-details"
-                                onClick={() => setShowTechnicalAudit((prev) => !prev)}
-                              >
-                                <span>{showTechnicalAudit ? "Hide technical details ▲" : "Technical evidence details ▼"}</span>
-                              </button>
-                            </div>
-
-                            {/* Surrounding Context Drawer */}
-                            {showFullContext && activeEvidenceItem && (
-                              <div className="surrounding-context-box">
-                                <span className="context-box-title">Surrounding Contractual Context:</span>
-                                <div className="context-box-prose">
-                                  <HighlightedQuote
-                                    text={activeEvidenceItem.text}
-                                    quote={activeCitationItem?.quote_snippet}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Technical Details Drawer */}
-                            {showTechnicalAudit && (
-                              <div className="technical-audit-box">
-                                <span className="tech-box-title">Technical Verification Details:</span>
-                                <div className="tech-meta-items">
-                                  <span>Backend: {liveResult.generated_by || "Verified Grounded Generator"}</span>
-                                  <span>Governing Law: {liveResult.jurisdiction_context || selectedJurisdiction}</span>
-                                  <span>Retrieval: {liveResult.latency_ms?.retrieval_ms ? `${Math.round(liveResult.latency_ms.retrieval_ms)}ms` : "0.4ms"}</span>
-                                  <span>Generation: {liveResult.latency_ms?.generation_ms ? `${Math.round(liveResult.latency_ms.generation_ms)}ms` : "420ms"}</span>
-                                  <span>Clause Ref: {activeEvidenceItem?.chunk_id}</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </section>
-                      )}
-                    </article>
-                  )}
-
-                  {/* Empty State before Inquiry */}
-                  {!liveResult && !isAnalyzing && (
-                    <div className="workspace-prompt-guide">
-                      <div className="guide-seal-icon">
-                        <ScalesOfJusticeIcon className="seal-svg" />
-                      </div>
-                      <h3 className="guide-heading">Ready to analyze {activeDoc?.title || "this document"}</h3>
-                      <p className="guide-text">
-                        Ask a specific legal question above or choose a suggested topic regarding termination triggers,
-                        notice periods, liability limitations, or SLA remedies.
-                      </p>
-                    </div>
-                  )}
-                    </>
-                  )}
-
-                  {/* ========================================================== */}
-                  {/* EVIDENCE-BACKED LEGAL NOTICE DRAFTER WORKSPACE             */}
-                  {/* ========================================================== */}
-                  {workspaceTab === "draft" && (
+  // Evidence-backed notice drafter (single instance, rendered on the Legal Drafting page)
+  const draftingPanel = (
                     <div className="legal-notice-drafter-container">
                       {/* Drafter Introduction Card */}
                       <section className="drafter-intro-card">
@@ -1946,7 +993,7 @@ export default function App() {
                           <div className="drafter-title-group">
                             <h3>Evidence-Backed Legal Notice Drafter</h3>
                             <p className="drafter-subtitle">
-                              Draft a formal commercial notice strictly grounded in verified clauses from <strong>{activeDoc?.title || "the selected agreement"}</strong>. 
+                              Draft a formal commercial notice strictly grounded in verified clauses from <strong>{draftDoc?.title || "the selected agreement"}</strong>. 
                               Allegations from client instructions are segregated from source contract evidence with zero fabricated statutes, citations, or deadlines.
                             </p>
                           </div>
@@ -2282,7 +1329,1126 @@ export default function App() {
                         </section>
                       )}
                     </div>
+  )
+
+  // Breadcrumb context for the top bar
+  const VIEW_TRAIL: Record<AppView, string[]> = {
+    landing: ["Product", "Overview & Principles"],
+    overview: ["Command Centre"],
+    matters: ["Legal work", "Matters"],
+    workspace: ["Legal work", "Contract Workspace"],
+    drafting: ["Legal work", "Legal Drafting"],
+    tasks: ["Legal work", "Tasks & Deadlines"],
+  }
+  const crumbs = [
+    "HNX",
+    ...VIEW_TRAIL[view],
+    ...(view === "workspace" && activeDocId && activeDoc ? [activeDoc.title] : []),
+    ...(view === "drafting" && draftDoc ? [draftDoc.title] : []),
+  ]
+
+  return (
+    <div className="legal-app-root hnx-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <AppSidebar
+        view={view}
+        onNavigate={(v) => (v === "drafting" ? openDrafting() : setView(v))}
+        documentCount={documents.length}
+        documentsLive={documentsLive}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
+      />
+      <div className="hnx-main">
+        <AppTopBar crumbs={crumbs} onOpenMenu={() => setMobileNavOpen(true)}>
+        <div className="nav-tools">
+          {/* Governing Jurisdiction Selector (Active in Workspace or Drafting View) */}
+          {(view === "drafting" || (view === "workspace" && !activeDocId)) && (
+            <div className="jurisdiction-tool">
+              <div className="jurisdiction-label">
+                <LockIcon className="tool-lock" />
+                <span>Governing Law:</span>
+              </div>
+              <div className="select-box-wrap">
+                <select
+                  id="governing-jurisdiction-select"
+                  className="jurisdiction-dropdown"
+                  value={selectedJurisdiction}
+                  onChange={(e) => setSelectedJurisdiction(e.target.value)}
+                  aria-label="Select governing jurisdiction law"
+                >
+                  {JURISDICTIONS.map((jur) => (
+                    <option key={jur.id} value={jur.id}>
+                      [{jur.code}] {jur.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="dropdown-arrow" />
+              </div>
+            </div>
+          )}
+
+          {/* Quick Actions */}
+          <button
+            type="button"
+            className="btn-sample-action"
+            onClick={handleTrySample}
+            id="global-try-sample-btn"
+          >
+            Try a Sample
+          </button>
+
+          {view === "landing" && (
+            <button
+              type="button"
+              className="btn-primary-action"
+              onClick={handleOpenWorkspace}
+              id="global-analyze-btn"
+            >
+              Analyze a Document
+            </button>
+          )}
+        </div>
+        </AppTopBar>
+        <span id="main-content" className="skip-target" tabIndex={-1} />
+        <motion.div key={view} className="hnx-view" variants={pageVariants} initial="initial" animate="animate">
+
+      {/* ==================================================================== */}
+      {/* VIEW 1: LAWYER-FIRST PRODUCTION LANDING PAGE                         */}
+      {/* ==================================================================== */}
+      {view === "landing" && (
+        <main className="landing-page-root">
+          {/* Subtle Archival Atmosphere Background Overlay */}
+          <div
+            className="legal-atmosphere-backdrop"
+            aria-hidden="true"
+          />
+
+          {/* Subtle Architectural / Column Lines */}
+          <div
+            className="legal-atmosphere-geometry"
+            aria-hidden="true"
+          />
+
+          {/* ================================================================ */}
+          {/* 1. HERO SECTION                                                  */}
+          {/* ================================================================ */}
+          <section className="legal-hero-section">
+            <div className="hero-layout-grid">
+              {/* Left Column: Authoritative Legal Copy */}
+              <div className="hero-copy-column">
+                <div className="hero-eyebrow">
+                  <span className="eyebrow-rule" />
+                  <span>HNX Legal Intelligence · Evidentiary Document Review</span>
+                </div>
+
+                <h1 className="hero-primary-headline">
+                  Document-Grounded <em>Legal Intelligence.</em>
+                </h1>
+
+                <p className="hero-supporting-lead">
+                  Uncompromising contractual verification for commercial agreements. Every substantive claim cites operative clauses with exact character spans; silence and conflicts are reported explicitly.
+                </p>
+
+                {/* Primary & Secondary Action Buttons */}
+                <div className="hero-cta-button-row">
+                  <button
+                    type="button"
+                    className="hero-btn-primary"
+                    onClick={() => {
+                      setView("workspace")
+                      setTimeout(() => fileInputRef.current?.click(), 100)
+                    }}
+                    id="hero-upload-document-cta"
+                  >
+                    <UploadCloudIcon className="btn-browse-ico" />
+                    <span>Upload Document</span>
+                    <ArrowRightIcon className="cta-arrow" />
+                  </button>
+
+                  <button
+                    type="button"
+                    className="hero-btn-secondary"
+                    onClick={handleTrySample}
+                    id="hero-explore-demo-cta"
+                  >
+                    <span>Explore Demonstration</span>
+                  </button>
+                </div>
+
+                {/* Editorial Trust Badges */}
+                <div className="hero-trust-badges">
+                  <div className="hero-trust-badge">
+                    <ShieldCheckIcon className="trust-badge-icon" />
+                    <span>Zero Speculation Policy</span>
+                  </div>
+                  <div className="hero-trust-badge">
+                    <FileTextIcon className="trust-badge-icon" />
+                    <span>Character-Span Citations</span>
+                  </div>
+                  <div className="hero-trust-badge">
+                    <SplitBranchIcon className="trust-badge-icon" />
+                    <span>CPDE Precedence Tracking</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Animated Balance Scale + Product Demonstration */}
+              <div className="hero-demonstration-column">
+                {/* Refined Animated Balance Scale Illustration */}
+                <BalanceScaleHero />
+
+                <div className="hero-preview-card" aria-label="Evidentiary Demonstration Preview">
+                  <div className="preview-card-header">
+                    <span className="preview-badge">Live Demonstration</span>
+                    <span className="preview-doc-ref">DOC-006 · Master Services Agreement</span>
+                  </div>
+
+                  <div className="preview-stage-group">
+                    {/* Stage 1: Question */}
+                    <div className="preview-stage">
+                      <span className="stage-label">Question</span>
+                      <p className="preview-question-text">
+                        "Who can terminate this agreement?"
+                      </p>
+                    </div>
+
+                    {/* Stage 2: Answer with Status */}
+                    <div className="preview-stage preview-stage-answer">
+                      <div className="stage-label-row">
+                        <span className="stage-label">Answer</span>
+                        <span className="stage-supported-pill">
+                          <CheckIcon className="pill-check-ico" />
+                          Supported by source
+                        </span>
+                      </div>
+                      <p className="preview-answer-text">
+                        Either party may terminate for an uncured material breach, after a thirty (30) calendar day cure period.
+                      </p>
+                    </div>
+
+                    {/* Stage 3: Source */}
+                    <div className="preview-stage">
+                      <span className="stage-label">Source</span>
+                      <p className="preview-source-text">
+                        Master Cloud Services Agreement · Section 9.2 · Termination for Cause
+                      </p>
+                    </div>
+
+                    {/* Stage 4: Exact Evidence */}
+                    <div className="preview-stage preview-stage-quote">
+                      <span className="stage-label">Exact evidence</span>
+                      <blockquote className="preview-quote-body">
+                        "Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches any material term and fails to cure such breach within <mark>thirty (30) calendar days</mark>…"
+                      </blockquote>
+                    </div>
+                  </div>
+
+                  <div className="preview-card-footer">
+                    <button
+                      type="button"
+                      className="preview-demo-action"
+                      onClick={handleTrySample}
+                    >
+                      <span>Explore this live in the workspace →</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ================================================================ */}
+          {/* 2. HOW IT WORKS                                                  */}
+          {/* ================================================================ */}
+          <section className="legal-how-it-works-section">
+            <div className="section-header-centered">
+              <span className="section-pre-title">How it works</span>
+              <h2 className="section-main-title">Three Steps to Evidentiary Clarity</h2>
+              <p className="section-lead-text">
+                Designed for legal workflows: upload documents, inquire naturally, and inspect verbatim proof.
+              </p>
+            </div>
+
+            <div className="how-it-works-grid">
+              <div className="how-step-card reveal-on-scroll stagger-1">
+                <div className="how-step-index">1</div>
+                <h3 className="how-step-title">Upload a document</h3>
+                <p className="how-step-desc">
+                  Load commercial contracts, Master Services Agreements, or schedules as PDF, plain text (TXT) or Markdown.
+                </p>
+              </div>
+
+              <div className="how-step-card reveal-on-scroll stagger-2">
+                <div className="how-step-index">2</div>
+                <h3 className="how-step-title">Ask your question</h3>
+                <p className="how-step-desc">
+                  Inquire about termination triggers, liability carveouts, or obligations in plain legal English.
+                </p>
+              </div>
+
+              <div className="how-step-card reveal-on-scroll stagger-3">
+                <div className="how-step-index">3</div>
+                <h3 className="how-step-title">Review the evidence</h3>
+                <p className="how-step-desc">
+                  Every material claim connects directly to verbatim contractual clauses, section numbers, and page references.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* ================================================================ */}
+          {/* 3. BUILT FOR LEGAL REVIEW                                        */}
+          {/* ================================================================ */}
+          <section className="legal-capabilities-section">
+            <div className="section-header-centered">
+              <span className="section-pre-title">Built for legal review</span>
+              <h2 className="section-main-title">Forensic Contract Intelligence</h2>
+              <p className="section-lead-text">
+                Engineered specifically for transactional attorneys, in-house counsel, and contract review teams.
+              </p>
+            </div>
+
+            <div className="capabilities-grid">
+              <div className="capability-card reveal-on-scroll stagger-1">
+                <div className="cap-icon-box">
+                  <FileTextIcon className="cap-svg" />
+                </div>
+                <div className="cap-content">
+                  <h3 className="cap-title">Contract Review</h3>
+                  <p className="cap-desc">
+                    Find relevant clauses, obligations, exceptions, and related provisions across single or multi-part agreements.
+                  </p>
+                </div>
+              </div>
+
+              <div className="capability-card reveal-on-scroll stagger-2">
+                <div className="cap-icon-box">
+                  <ShieldCheckIcon className="cap-svg" />
+                </div>
+                <div className="cap-content">
+                  <h3 className="cap-title">Evidence-Grounded Answers</h3>
+                  <p className="cap-desc">
+                    Trace important claims to the exact source passage. Avoid unsupported claims with sentence-level verification.
+                  </p>
+                </div>
+              </div>
+
+              <div className="capability-card reveal-on-scroll stagger-3">
+                <div className="cap-icon-box">
+                  <SearchMinusIcon className="cap-svg" />
+                </div>
+                <div className="cap-content">
+                  <h3 className="cap-title">Missing Evidence</h3>
+                  <p className="cap-desc">
+                    Know when the document does not establish an answer. The system identifies silence rather than inventing terms.
+                  </p>
+                </div>
+              </div>
+
+              <div className="capability-card reveal-on-scroll stagger-4">
+                <div className="cap-icon-box">
+                  <SplitBranchIcon className="cap-svg" />
+                </div>
+                <div className="cap-content">
+                  <h3 className="cap-title">Related Provisions</h3>
+                  <p className="cap-desc">
+                    Follow explicit legal references between clauses, tracking <em>notwithstanding</em> overrides and schedule precedence.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ================================================================ */}
+          {/* 4. TRUST / DIFFERENTIATOR: INSPECT THE EVIDENCE                   */}
+          {/* ================================================================ */}
+          <section className="legal-differentiator-section">
+            <div className="section-header-centered">
+              <span className="section-pre-title">Evidentiary audit trail</span>
+              <h2 className="section-main-title">Don't just get an answer. Inspect the evidence.</h2>
+              <p className="section-lead-text">
+                Generic AI summarizes without proof. HNX connects every substantive assertion directly to its operative contractual clause.
+              </p>
+            </div>
+
+            <div className="differentiator-chain-wrapper">
+              <div className="audit-step-block audit-claim-block reveal-on-scroll stagger-1">
+                <div className="audit-step-header">
+                  <span className="audit-step-tag">Claim</span>
+                  <span className="audit-status-tag">
+                    <CheckIcon className="pill-check-ico" />
+                    Supported by Document Evidence
+                  </span>
+                </div>
+                <p className="audit-claim-text">
+                  After two consecutive months below 95.0% uptime, the customer may terminate on fifteen (15) days' notice — overriding the Master Agreement's thirty (30) day notice period.
+                </p>
+              </div>
+
+              <div className="chain-connector">
+                <span className="connector-text">Traced to operative source ↓</span>
+              </div>
+
+              <div className="audit-step-block audit-source-block reveal-on-scroll stagger-2">
+                <div className="audit-step-header">
+                  <span className="audit-step-tag">Source</span>
+                  <span className="audit-source-name">Cloud Service Level Agreement &amp; Availability Schedule</span>
+                </div>
+                <div className="audit-source-details">
+                  <span className="source-chip">Section 3.1</span>
+                  <span className="source-chip">DOC-008</span>
+                  <span className="source-chip">Override clause</span>
+                </div>
+              </div>
+
+              <div className="chain-connector">
+                <span className="connector-text">Exact contractual language ↓</span>
+              </div>
+
+              <div className="audit-step-block audit-evidence-block reveal-on-scroll stagger-3">
+                <div className="audit-step-header">
+                  <span className="audit-step-tag">Exact evidence</span>
+                  <span className="audit-verbatim-tag">Verbatim contract text</span>
+                </div>
+                <blockquote className="audit-evidence-quote">
+                  "If Monthly Uptime falls below 95.0% in any two (2) consecutive calendar months, Customer may terminate this Agreement immediately upon <mark>fifteen (15) calendar days prior written notice</mark>, notwithstanding the thirty (30) day notice period specified in Section 9.2 of the Master Agreement (DOC-006)."
+                </blockquote>
+                <div className="audit-rel-notice">
+                  <SplitBranchIcon className="rel-ico" />
+                  <span><strong>Follow Related Provisions:</strong> Express <code>notwithstanding</code> override modifies the Master Agreement (DOC-006) § 9.2 notice period.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ================================================================ */}
+          {/* 5. CALL TO ACTION                                                */}
+          {/* ================================================================ */}
+          <section className="legal-bottom-cta-section">
+            <div className="cta-box-card reveal-scale">
+              <div className="cta-content">
+                <h2 className="cta-headline">Ready to review agreements with evidentiary certainty?</h2>
+                <p className="cta-sub">
+                  Experience commercial contract review where every answer shows its evidence and silence is explicitly noted.
+                </p>
+                <div className="cta-buttons">
+                  <button
+                    type="button"
+                    className="hero-btn-primary"
+                    onClick={handleOpenWorkspace}
+                  >
+                    <span>Analyze a Document</span>
+                    <ArrowRightIcon className="cta-arrow" />
+                  </button>
+                  <button
+                    type="button"
+                    className="hero-btn-secondary"
+                    onClick={handleTrySample}
+                  >
+                    <span>Try a Sample</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* ==================================================================== */}
+      {/* VIEW 2: LAWYER-FIRST CONTRACT WORKSPACE                             */}
+      {/* ==================================================================== */}
+      {view === "workspace" && (
+        <main className="workspace-view-root">
+          {/* STATE A: NO ACTIVE DOCUMENT -> MAJOR PRIMARY INTAKE EXPERIENCE */}
+          {!activeDocId ? (
+            <div className="workspace-intake-container">
+              <div className="intake-header">
+                <div className="intake-crest">
+                  <ScalesOfJusticeIcon className="intake-crest-svg" />
+                </div>
+                <h1 className="intake-title">Analyze a Legal Document</h1>
+                <p className="intake-subtitle">
+                  Upload a contract, case file, judgment, notice, or other legal document to begin evidentiary review.
+                </p>
+              </div>
+
+              {/* Large Centered Intake Dropzone */}
+              <div
+                className={`intake-dropzone-card ${isDragging ? "drag-active" : ""}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className="dropzone-cloud-icon-box">
+                  <UploadCloudIcon className="dropzone-cloud-ico" />
+                </div>
+
+                <h2 className="dropzone-main-label">Upload your document</h2>
+                <p className="dropzone-hint">
+                  Drag and drop a contract here, or choose a file from your computer
+                </p>
+                <p className="dropzone-formats">
+                  Accepted formats: PDF, TXT, Markdown (.md) · Word files are not yet supported
+                </p>
+
+                <div className="dropzone-button-row">
+                  <button
+                    type="button"
+                    className="btn-intake-browse"
+                    onClick={() => fileInputRef.current?.click()}
+                    id="intake-choose-pdf-btn"
+                  >
+                    <FileTextIcon className="btn-browse-ico" />
+                    <span>Choose Document</span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.txt,.md"
+                    style={{ display: "none" }}
+                    onChange={handleFileUpload}
+                  />
+                </div>
+
+                {isUploading && (
+                  <div className="intake-uploading-indicator" role="status" aria-live="polite">
+                    <span className="button-spinner" />
+                    <span>Uploading, extracting and indexing the document…</span>
+                  </div>
+                )}
+                {errorMessage && !isUploading && (
+                  <div className="error-callout-banner hnx-intake-error" role="alert">
+                    <AlertTriangleIcon className="err-ico" />
+                    <div className="err-text">{errorMessage}</div>
+                    <button type="button" className="err-close" onClick={() => setErrorMessage(null)} aria-label="Dismiss error notice">
+                      <CrossIcon />
+                    </button>
+                  </div>
+                )}
+
+                {/* Or Try Verified Sample Preset */}
+                <div className="intake-sample-divider">
+                  <span className="divider-line" />
+                  <span className="divider-text">or try a verified sample</span>
+                  <span className="divider-line" />
+                </div>
+
+                <div className="intake-samples-grid">
+                  {documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="intake-sample-card"
+                      onClick={() => {
+                        setActiveDocId(doc.id)
+                        setUserQuery("Who can terminate this agreement?")
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                          e.preventDefault()
+                          setActiveDocId(doc.id)
+                          setUserQuery("Who can terminate this agreement?")
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Open ${doc.title}`}
+                    >
+                      <div className="sample-card-left">
+                        <span className="sample-dot">●</span>
+                        <div className="sample-text-group">
+                          <span className="sample-title">{doc.title}</span>
+                          <span className="sample-meta">{doc.size ? `${doc.size} · ` : ""}Indexed · ready for questions</span>
+                        </div>
+                      </div>
+                      <div className="sample-card-actions">
+                        <button
+                          type="button"
+                          className="btn-sample-draft"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveDocId(doc.id)
+                            setShowDraftModal(true)
+                          }}
+                          title={`Draft Legal Document for ${doc.title}`}
+                          id={`btn-sample-draft-${doc.id}`}
+                        >
+                          <FileTextIcon className="btn-mini-ico" />
+                          <span>Draft Notice</span>
+                        </button>
+                        <ArrowRightIcon className="sample-arrow" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* STATE B: ACTIVE DOCUMENT -> FOCUSED ANALYSIS WORKSPACE */
+            <div className="workspace-focused-root">
+              {/* TOP: Active Document & Controls Bar */}
+              <header className="workspace-active-doc-bar">
+                <div className="active-doc-left">
+                  <span className="doc-active-indicator">●</span>
+                  <div className="active-doc-title-group">
+                    <h2 className="active-doc-heading">
+                      {activeDoc?.title || "Master Cloud Services Agreement"}
+                    </h2>
+                    <div className="active-doc-metadata-row">
+                      <span>{activeDoc?.size || "32 KB"}</span>
+                      <span className="meta-sep">·</span>
+                      <span>{activeDoc?.sections || 6} Operative Sections</span>
+                      <span className="meta-sep">·</span>
+                      <span>Governing Law: {currentJurData.label} [{currentJurData.code}]</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="active-doc-actions">
+                  <div className="jurisdiction-select-wrap">
+                    <select
+                      id="governing-jurisdiction-select"
+                      className="workspace-jurisdiction-select"
+                      value={selectedJurisdiction}
+                      onChange={(e) => setSelectedJurisdiction(e.target.value)}
+                      aria-label="Governing Law Jurisdiction"
+                    >
+                      {JURISDICTIONS.map((jur) => (
+                        <option key={jur.id} value={jur.id}>
+                          [{jur.code}] {jur.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-workspace-draft-action primary-gold"
+                    onClick={() => setShowDraftModal(true)}
+                    title="Draft Evidence-Backed Legal Notice for this document"
+                    id="btn-workspace-draft-action"
+                  >
+                    <FileTextIcon className="btn-ico" />
+                    <span>Draft Legal Document</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-workspace-switch-doc"
+                    onClick={() => setActiveDocId(null)}
+                    title="Switch or upload another document"
+                    aria-label="Switch or upload another document"
+                  >
+                    <UploadCloudIcon className="btn-ico" />
+                    <span>Switch / Add Document</span>
+                  </button>
+                </div>
+              </header>
+
+              {/* MAIN WORKSPACE: Compact Left Document Navigator + Center Analysis Stage */}
+              <div className="workspace-main-layout">
+                {/* LEFT: Compact Document Navigator */}
+                <aside className="workspace-compact-sidebar">
+                  <div className="sidebar-header-row">
+                    <span className="sidebar-heading">Documents</span>
+                    <button
+                      type="button"
+                      className="btn-sidebar-add-doc"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Upload document"
+                    >
+                      + Add document
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.txt,.md"
+                      style={{ display: "none" }}
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+
+                  <div className="compact-docs-list" role="listbox" aria-label="Loaded legal documents">
+                    {documents.map((d) => {
+                      const isActive = d.id === activeDocId
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          className={`compact-doc-item ${isActive ? "active-doc" : ""}`}
+                          onClick={() => {
+                            setActiveDocId(d.id)
+                            setLiveResult(null)
+                            setErrorMessage(null)
+                          }}
+                          role="option"
+                          aria-selected={isActive}
+                        >
+                          <span className={`doc-status-bullet ${isActive ? "bullet-active" : ""}`}>
+                            {isActive ? "●" : "○"}
+                          </span>
+                          <div className="compact-doc-info">
+                            <span className="compact-doc-title">{d.title}</span>
+                            <span className="compact-doc-sub">{d.size || "32 KB"} · Ready</span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </aside>
+
+                {/* CENTER: Question Area → Loading → Answer → Evidence */}
+                <main className="workspace-center-stage">
+                  {/* Document Scope Banner */}
+                  <div className="workspace-scope-banner">
+                    <ShieldCheckIcon className="trust-badge-icon" />
+                    <span>
+                      Active Scope: <strong>{activeDoc?.title}</strong> ({activeDoc?.id}). Analysis is strictly bounded to this document without default-corpus cross-contamination.
+                    </span>
+                  </div>
+
+                  {/* High-Visibility Draft Legal Document CTA Banner */}
+                  <div className="workspace-draft-cta-banner">
+                    <div className="draft-cta-left">
+                      <FileTextIcon className="cta-ico" />
+                      <div className="cta-text">
+                        <span className="cta-title">Evidence-Backed Legal Notice Drafting</span>
+                        <span className="cta-sub">
+                          Prepare a structured, lawyer-reviewable Legal Notice grounded strictly in operative clauses from <strong>{activeDoc?.title}</strong>.
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-draft-cta-action"
+                      id="btn-workspace-cta-draft"
+                      onClick={() => setShowDraftModal(true)}
+                    >
+                      <FileTextIcon />
+                      <span>Draft Legal Document</span>
+                    </button>
+                  </div>
+
+                  {/* Mode Selector Tabs: Inquiry vs Evidence-Backed Drafting */}
+                  <div className="workspace-tab-bar" role="tablist">
+                    <button
+                      type="button"
+                      className={`workspace-tab-btn ${workspaceTab === "inquiry" ? "active" : ""}`}
+                      onClick={() => setWorkspaceTab("inquiry")}
+                      id="workspace-tab-inquiry-btn"
+                      role="tab"
+                      aria-selected={workspaceTab === "inquiry"}
+                    >
+                      <SearchMinusIcon className="tab-ico" />
+                      <span>Clause Analysis & Inquiries</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`workspace-tab-btn ${workspaceTab === "draft" ? "active" : ""}`}
+                      onClick={() => openDrafting(activeDoc?.id)}
+                      id="workspace-tab-draft-btn"
+                      role="tab"
+                      aria-selected={workspaceTab === "draft"}
+                    >
+                      <FileTextIcon className="tab-ico" />
+                      <span>Draft Legal Notice (Evidence-Backed)</span>
+                      <span className="tab-badge-new">NEW</span>
+                    </button>
+                  </div>
+
+                  {uploadNotice && (
+                    <div className="hnx-upload-status success" role="status">
+                      <CheckIcon className="err-ico" />
+                      <span>{uploadNotice}</span>
+                      <button type="button" className="err-close" onClick={() => setUploadNotice(null)} aria-label="Dismiss upload notice">
+                        <CrossIcon />
+                      </button>
+                    </div>
                   )}
+
+                  {/* Error Notification */}
+                  {errorMessage && (
+                    <div className="error-callout-banner" role="alert">
+                      <AlertTriangleIcon className="err-ico" />
+                      <div className="err-text">{errorMessage}</div>
+                      <button
+                        type="button"
+                        className="err-close"
+                        onClick={() => setErrorMessage(null)}
+                        aria-label="Dismiss error notice"
+                      >
+                        <CrossIcon />
+                      </button>
+                    </div>
+                  )}
+
+                  {workspaceTab === "inquiry" && (
+                    <>
+                      {/* 1. Question Area */}
+                      <section className="workspace-question-section">
+                        <label htmlFor="legal-inquiry-input" className="question-section-label">
+                          Ask about this document
+                        </label>
+
+                        <div className="question-input-wrapper">
+                          <input
+                            ref={queryInputRef}
+                            id="legal-inquiry-input"
+                            type="text"
+                            className="question-input-field"
+                            value={userQuery}
+                            onChange={(e) => setUserQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !isAnalyzing) handleRunAnalysis()
+                            }}
+                            placeholder="What would you like to know about this document?"
+                            disabled={isAnalyzing}
+                            aria-label="What would you like to know about this document?"
+                          />
+                          <button
+                            type="button"
+                            className="btn-question-ask"
+                            onClick={() => handleRunAnalysis()}
+                            disabled={isAnalyzing || !userQuery.trim()}
+                            id="analyze-document-submit-btn"
+                          >
+                            {isAnalyzing ? "Checking…" : "Ask"}
+                          </button>
+                        </div>
+
+                        <div className="question-suggestions-row">
+                          <span className="suggestions-lead">Try asking:</span>
+                          {SUGGESTIONS.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              className="suggestion-link-btn"
+                              onClick={() => {
+                                setUserQuery(s)
+                                queryInputRef.current?.focus()
+                              }}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* Honest Loading State (Real stages, no fake percentages) */}
+                      {isAnalyzing && (
+                        <div className="honest-loading-panel" role="status" aria-live="polite">
+                          <div className="loading-spinner-ring" />
+                      <div className="loading-steps-stack">
+                        <span className="loading-active-step">{analysisStage}</span>
+                        <div className="loading-stages-trail">
+                          <span className={`stage-dot ${analysisStage === "Analyzing document..." ? "current" : "done"}`}>
+                            Analyzing document
+                          </span>
+                          <span className="stage-sep">→</span>
+                          <span className={`stage-dot ${analysisStage === "Finding relevant provisions..." ? "current" : analysisStage.includes("Checking") || analysisStage.includes("Preparing") ? "done" : ""}`}>
+                            Finding relevant provisions
+                          </span>
+                          <span className="stage-sep">→</span>
+                          <span className={`stage-dot ${analysisStage === "Checking source evidence..." ? "current" : analysisStage.includes("Preparing") ? "done" : ""}`}>
+                            Checking source evidence
+                          </span>
+                          <span className="stage-sep">→</span>
+                          <span className={`stage-dot ${analysisStage === "Preparing answer..." ? "current" : ""}`}>
+                            Preparing answer
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Answer & Evidence Area */}
+                  {liveResult && !isAnalyzing && (
+                    <motion.article
+                      key={liveResult.query}
+                      className="workspace-answer-article"
+                      aria-label="Grounded Legal Analysis"
+                      variants={panelReveal}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      {/* Answer Header & Status */}
+                      <div className="answer-header-row">
+                        <h3 className="answer-main-heading">Answer</h3>
+                        <span className={`answer-status-pill tone-${liveResult.evidence_state?.toLowerCase() || (liveResult.is_abstention ? "insufficient" : "supported")}`}>
+                          {liveResult.evidence_state === "INSUFFICIENT" || liveResult.is_abstention ? (
+                            <>
+                              <SearchMinusIcon className="pill-ico" />
+                              <span>INSUFFICIENT · Evidence Not Established</span>
+                            </>
+                          ) : liveResult.evidence_state === "CONFLICTING" ? (
+                            <>
+                              <SplitBranchIcon className="pill-ico" />
+                              <span>CONFLICTING · Contradiction Identified</span>
+                            </>
+                          ) : liveResult.evidence_state === "PARTIAL" ? (
+                            <>
+                              <AlertTriangleIcon className="pill-ico" />
+                              <span>PARTIAL · Select Provisions Grounded</span>
+                            </>
+                          ) : liveResult.evidence_state === "UNVERIFIED" ? (
+                            <>
+                              <LockIcon className="pill-ico" />
+                              <span>UNVERIFIED · Verification Pending</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckIcon className="pill-ico" />
+                              <span>SUPPORTED · Fully Grounded</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Formatted Answer Body */}
+                      <div className="answer-body-content">
+                        <FormattedAnswerText
+                          rawText={liveResult.answer_text}
+                          evidenceList={liveResult.evidence || []}
+                          documents={documents}
+                          onSelectChunk={(cid) => setSelectedCitationChunkId(cid)}
+                        />
+                        {!liveResult.is_abstention && (
+                          <div className="answer-draft-bridge-row">
+                            <button
+                              type="button"
+                              className="btn-bridge-to-draft"
+                              onClick={() => {
+                                openDrafting(activeDoc?.id)
+                                setDraftBreach(`Alleged non-compliance regarding ${userQuery || "contractual obligations"}`)
+                              }}
+                              id="btn-bridge-to-draft"
+                              title="Prepare an evidence-backed formal notice based on this finding"
+                            >
+                              <FileTextIcon className="btn-ico" />
+                              <span>Draft Legal Notice From This Finding →</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* In case of Insufficient Evidence / Abstention */}
+                      {(liveResult.evidence_state === "INSUFFICIENT" || liveResult.is_abstention) && (
+                        <div className="insufficient-evidence-callout">
+                          <div className="insufficient-header">
+                            <SearchMinusIcon className="insufficient-ico" />
+                            <h4>Evidence Not Found — Refusal to Speculate</h4>
+                          </div>
+                          <p className="insufficient-body">
+                            {liveResult.abstention_reason ||
+                              "The provided agreements do not contain evidence to establish this rule. The platform strictly refuses to speculate or invent contractual terms."}
+                          </p>
+                          {liveResult.evidence && liveResult.evidence.length > 0 && (
+                            <div className="closest-passages-box">
+                              <span className="closest-title">Closest Candidate Passages Checked (Verify Silence):</span>
+                              <div className="closest-list">
+                                {liveResult.evidence.slice(0, 2).map((ev) => (
+                                  <div
+                                    key={ev.chunk_id}
+                                    className="closest-item"
+                                    onClick={() => setSelectedCitationChunkId(ev.chunk_id)}
+                                  >
+                                    <span className="closest-sec">{ev.document_title} · {ev.section}</span>
+                                    <span className="closest-preview">{ev.text.slice(0, 140)}…</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* In case of Conflicting Provisions */}
+                      {liveResult.evidence_state === "CONFLICTING" && (
+                        <div className="conflict-provisions-section">
+                          <div className="conflict-section-header">
+                            <h4>Conflicting Contractual Terms</h4>
+                            <span>Both provisions shown below; neither was assumed for you.</span>
+                          </div>
+                          <div className="conflict-columns-grid">
+                            {liveResult.citations.slice(0, 2).map((cit, idx) => (
+                              <div key={idx} className={`conflict-card-col source-${idx === 0 ? "a" : "b"}`}>
+                                <span className="source-tag">{idx === 0 ? "Provision A" : "Provision B"}</span>
+                                <div className="conflict-claim">{cit.claim}</div>
+                                <blockquote className="conflict-quote">"{cit.quote_snippet || cit.claim}"</blockquote>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Evidence Supporting This Answer */}
+                      {(!liveResult.is_abstention && liveResult.evidence_state !== "INSUFFICIENT") && (
+                        <section className="answer-evidence-section">
+                          <div className="evidence-section-header">
+                            <h4 className="evidence-section-title">Evidence supporting this answer</h4>
+                            {liveResult.citations && liveResult.citations.length > 1 && (
+                              <div className="evidence-sources-nav">
+                                <span className="sources-count-text">Sources ({liveResult.citations.length}):</span>
+                                {liveResult.citations.map((c, idx) => {
+                                  const isSelected = (selectedCitationChunkId === c.chunk_id) || (!selectedCitationChunkId && idx === 0)
+                                  const ev = liveResult.evidence?.find((e) => e.chunk_id === c.chunk_id)
+                                  const doc = documents.find((d) => d.id === c.chunk_id.split("#")[0])
+                                  const docTitle = doc?.title || ev?.document_title || `Source ${idx + 1}`
+                                  const sec = ev?.section?.match(/(?:Section|§)?\s*([0-9]+(?:\.[0-9]+)?)/i)?.[1] || ""
+                                  return (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      className={`source-chip-toggle ${isSelected ? "active" : ""}`}
+                                      onClick={() => setSelectedCitationChunkId(c.chunk_id)}
+                                    >
+                                      <span>{idx + 1}. {docTitle.split(" ")[0]} {sec ? `§ ${sec}` : ""}</span>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Active Source Card — re-keyed per citation so the new evidence slides in immediately */}
+                          <motion.div
+                            key={effectiveCitationChunkId || "evidence"}
+                            className="evidence-primary-card"
+                            variants={crossFade}
+                            initial="initial"
+                            animate="animate"
+                          >
+                            <div className="source-location-row">
+                              <div className="source-doc-info">
+                                <FileTextIcon className="source-doc-ico" />
+                                <span className="source-doc-name">{activeEvidenceDocName}</span>
+                                <span className="source-meta-sep">·</span>
+                                <span className="source-sec-name">{activeEvidenceSection}</span>
+                                {activeEvidenceItem?.page ? (
+                                  <>
+                                    <span className="source-meta-sep">·</span>
+                                    <span className="source-page-name">{activeEvidencePage}</span>
+                                  </>
+                                ) : null}
+                              </div>
+                              {activeCitationItem?.verified ? (
+                                <span className="source-verified-badge" title={activeCitationItem.verification_reason || undefined}>
+                                  ✓ Quote matched in source
+                                </span>
+                              ) : activeCitationItem ? (
+                                <span className="source-verified-badge is-unmatched" title={activeCitationItem.verification_reason || undefined}>
+                                  ! Quote not matched exactly
+                                </span>
+                              ) : (
+                                <span className="source-verified-badge is-retrieved">Retrieved passage</span>
+                              )}
+                            </div>
+
+                            <div className="exact-evidence-block">
+                              <span className="exact-evidence-label">
+                                {activeCitationItem?.quote_snippet ? "Quoted evidence:" : "Retrieved passage (excerpt):"}
+                              </span>
+                              <blockquote className="exact-evidence-quote">
+                                "{activeQuoteSnippet}"
+                              </blockquote>
+                            </div>
+
+                            {/* Related Provision (Cross-reference / Overrides) */}
+                            {activeRelationship && (
+                              <div className="related-provision-box">
+                                <div className="rel-prov-header">
+                                  <SplitBranchIcon className="rel-ico" />
+                                  <span className="rel-prov-label">Related provision</span>
+                                </div>
+                                <div className="rel-prov-content">
+                                  <span className="rel-prov-title">
+                                    {activeRelationship.target_section || `Section ${activeRelationship.referenced_section}`} in {activeRelationship.target_doc_title}
+                                  </span>
+                                  <span className="rel-prov-relation">
+                                    ↳ Linked by <code>"{activeRelationship.operator || activeRelationship.relation.toLowerCase()}"</code> —{" "}
+                                    {activeRelationship.relation === "OVERRIDE"
+                                      ? "this clause takes precedence over the referenced provision."
+                                      : activeRelationship.relation === "CARVEOUT"
+                                        ? "this clause is subject to the referenced provision."
+                                        : activeRelationship.relation === "DEFINITION"
+                                          ? "a term is defined in the referenced provision."
+                                          : "cross-referenced provision."}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Progressive Disclosure Action Row */}
+                            <div className="evidence-footer-actions">
+                              <button
+                                type="button"
+                                className="btn-expand-context"
+                                onClick={() => setShowFullContext((prev) => !prev)}
+                              >
+                                <span>{showFullContext ? "Hide surrounding document context ▲" : "View surrounding document context ▼"}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn-expand-context btn-tech-details"
+                                onClick={() => setShowTechnicalAudit((prev) => !prev)}
+                              >
+                                <span>{showTechnicalAudit ? "Hide technical details ▲" : "Technical evidence details ▼"}</span>
+                              </button>
+                            </div>
+
+                            {/* Surrounding Context Drawer */}
+                            <AnimatePresence initial={false}>
+                            {showFullContext && activeEvidenceItem && (
+                              <motion.div key="context" className="surrounding-context-box" variants={disclosure} initial="initial" animate="animate" exit="exit" style={{ overflow: "hidden" }}>
+                                <span className="context-box-title">Surrounding Contractual Context:</span>
+                                <div className="context-box-prose">
+                                  <HighlightedQuote
+                                    text={activeEvidenceItem.text}
+                                    quote={activeCitationItem?.quote_snippet}
+                                  />
+                                </div>
+                              </motion.div>
+                            )}
+
+                            {/* Technical Details Drawer */}
+                            {showTechnicalAudit && (
+                              <motion.div key="tech" className="technical-audit-box" variants={disclosure} initial="initial" animate="animate" exit="exit" style={{ overflow: "hidden" }}>
+                                <span className="tech-box-title">Technical Verification Details:</span>
+                                <div className="tech-meta-items">
+                                  <span>Generated by: {liveResult.generated_by || "evidence gate (no generation)"}</span>
+                                  <span>Governing Law: {liveResult.jurisdiction_context || selectedJurisdiction}</span>
+                                  <span>Retrieval: {liveResult.latency_ms?.retrieval_ms != null ? `${Math.round(liveResult.latency_ms.retrieval_ms)} ms` : "not reported"}</span>
+                                  <span>Generation: {liveResult.latency_ms?.generation_ms != null ? `${Math.round(liveResult.latency_ms.generation_ms)} ms` : "not reported"}</span>
+                                  <span>Clause ref: {activeEvidenceItem?.chunk_id}</span>
+                                  {activeCitationItem?.verification_reason && <span>Check: {activeCitationItem.verification_reason}</span>}
+                                </div>
+                              </motion.div>
+                            )}
+                            </AnimatePresence>
+                          </motion.div>
+                        </section>
+                      )}
+                    </motion.article>
+                  )}
+
+                  {/* Empty State before Inquiry */}
+                  {!liveResult && !isAnalyzing && (
+                    <div className="workspace-prompt-guide">
+                      <div className="guide-seal-icon">
+                        <ScalesOfJusticeIcon className="seal-svg" />
+                      </div>
+                      <h3 className="guide-heading">Ready to analyze {activeDoc?.title || "this document"}</h3>
+                      <p className="guide-text">
+                        Ask a specific legal question above or choose a suggested topic regarding termination triggers,
+                        notice periods, liability limitations, or SLA remedies.
+                      </p>
+                    </div>
+                  )}
+                    </>
+                  )}
+
                 </main>
               </div>
             </div>
@@ -2291,19 +2457,172 @@ export default function App() {
       )}
 
       {/* ==================================================================== */}
+      {/* WORKFLOW VIEWS: SMART WORKSPACE · MATTERS · LEGAL DRAFTING · TASKS  */}
+      {/* ==================================================================== */}
+      {view === "overview" && (
+        <OverviewPage
+          store={workflow}
+          documents={documents}
+          documentsLive={documentsLive}
+          onNewMatter={() => {
+            setMatterCreateNonce((n) => n + 1)
+            setView("matters")
+          }}
+          onAnalyze={handleOpenWorkspace}
+          onDraftNotice={() => openDrafting()}
+          onOpenTasks={() => setView("tasks")}
+          onOpenMatter={(id) => {
+            setSelectedMatterId(id)
+            setView("matters")
+          }}
+        />
+      )}
+
+      {view === "matters" && (
+        <MattersPage
+          store={workflow}
+          documents={documents}
+          selectedMatterId={selectedMatterId}
+          onSelectMatter={setSelectedMatterId}
+          createNonce={matterCreateNonce}
+          onOpenDocument={(docId) => {
+            setActiveDocId(docId)
+            setWorkspaceTab("inquiry")
+            setView("workspace")
+          }}
+          onDraftForMatter={(matterId, docId) => openDrafting(docId, matterId)}
+        />
+      )}
+
+      {view === "tasks" && <TasksPage store={workflow} />}
+
+      {view === "drafting" && (
+        <main className="wf-page" aria-labelledby="wf-drafting-title">
+          <PageHeader
+            id="wf-drafting-title"
+            eyebrow="Drafting desk"
+            title="Legal Drafting"
+            description="Drafts combine clauses retrieved from the selected source document with the facts you enter. Missing facts remain as placeholders; no statutes, case law or deadlines are invented."
+            actions={
+              <button type="button" className="wf-btn" onClick={handleClearDraftForm} disabled={isDrafting}>
+                Clear form
+              </button>
+            }
+          />
+          <div className="hnx-review-ribbon" role="note">
+            <span>DRAFT — REQUIRES LAWYER REVIEW</span>
+            <span>Every generated notice is a starting point for counsel, not a document to send.</span>
+          </div>
+          <ol className="hnx-steps" aria-label="Drafting progress">
+            <li className={draftDoc ? "done" : ""}>Source document &amp; type</li>
+            <li className={draftBreach.trim() ? "done" : ""}>Parties, facts &amp; instructions</li>
+            <li className={editableDraftText ? "done" : ""}>Generate from evidence</li>
+            <li className={workflow.drafts.some((d) => d.docId === draftDocId) ? "done" : ""}>Edit &amp; record review</li>
+          </ol>
+
+          <section className="wf-card wf-drafting-source" aria-label="Draft setup">
+            <label className="wf-field">
+              <span>Document type</span>
+              <select value={draftDocType} onChange={(e) => setDraftDocType(e.target.value)}>
+                <option value="legal_notice">Legal Notice</option>
+              </select>
+            </label>
+            <label className="wf-field wf-grow">
+              <span>Source document</span>
+              <select value={draftDocId} onChange={(e) => openDrafting(e.target.value)} disabled={isDrafting}>
+                {!draftDoc && <option value={draftDocId}>{draftDocId || "— Select source document —"}</option>}
+                {documents.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.id} · {d.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="wf-muted">
+              Legal Notice is the first supported document type.
+              {documentsLive ? "" : " Document list is the offline sample; drafting needs the API server."}
+            </p>
+          </section>
+
+          {draftErrorMessage && (
+            <div className="error-callout-banner" role="alert">
+              <AlertTriangleIcon className="err-ico" />
+              <div className="err-text">{friendlyError(draftErrorMessage)}</div>
+              <button
+                type="button"
+                className="err-close"
+                onClick={() => setDraftErrorMessage(null)}
+                aria-label="Dismiss drafting error"
+              >
+                <CrossIcon />
+              </button>
+            </div>
+          )}
+
+          <section className="wf-card" aria-labelledby="wf-operative-clauses-h" aria-busy={isLoadingClauses}>
+            <div className="wf-card-head">
+              <h2 id="wf-operative-clauses-h">Operative clauses in {draftDoc?.title || draftDocId}</h2>
+              <span className="clause-chunk-badge">{draftDocId}</span>
+            </div>
+            {isLoadingClauses ? (
+              <p className="wf-muted" role="status">Retrieving clauses…</p>
+            ) : operativeClauses.length === 0 ? (
+              <p className="wf-empty">
+                No clauses retrieved for this document yet. Use “Preview Operative Clauses” after describing the breach.
+              </p>
+            ) : (
+              <div className="clauses-card-stack">
+                {operativeClauses.map((item: any) => (
+                  <div key={item.chunk_id} className="grounded-clause-card">
+                    <div className="clause-card-meta">
+                      <span className="clause-card-title">{item.section_title}</span>
+                      <span className="clause-chunk-badge">{item.chunk_id}</span>
+                    </div>
+                    <blockquote className="clause-quote-text">"{item.quote_snippet}"</blockquote>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <div className="wf-drafting-body">{draftingPanel}</div>
+
+          <DraftReviewPanel
+            store={workflow}
+            docId={draftDocId}
+            docTitle={draftDoc?.title || draftDocId}
+            recipient={draftRecipient}
+            hasDraft={!!editableDraftText}
+            defaultMatterId={draftMatterId}
+          />
+        </main>
+      )}
+
+        </motion.div>
+
+      {/* ==================================================================== */}
       {/* EVIDENCE-BACKED LEGAL NOTICE DRAFTING MODAL DIALOG                  */}
       {/* ==================================================================== */}
+      <AnimatePresence>
       {showDraftModal && (
-        <div
+        <motion.div
+          key="draft-modal"
           className="draft-modal-backdrop"
           role="dialog"
           aria-modal="true"
           aria-labelledby="draft-modal-heading"
+          variants={backdropVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setShowDraftModal(false)
+          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDraftModal(false)
           }}
         >
-          <div className="draft-modal-container">
+          <motion.div className="draft-modal-container" variants={dialogVariants}>
             {/* Modal Header */}
             <div className="draft-modal-header">
               <div className="draft-modal-title-group">
@@ -2657,9 +2976,10 @@ export default function App() {
                 </section>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* ==================================================================== */}
       {/* GLOBAL FOOTER BAR                                                   */}
@@ -2680,6 +3000,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   )
 }

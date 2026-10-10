@@ -1,0 +1,100 @@
+/*
+ * UI polish pass — guided by the ui-ux-pro-max skill (.claude/skills/ui-ux-pro-max):
+ * priority 1 accessibility (contrast, focus, keyboard), 2 touch targets, 6 typography floor,
+ * 7 reduced motion. Loaded after index.css; keeps the navy / warm ivory / brass identity.
+ */
+
+/* Contrast: the dim text token measured 2.8:1 on navy surfaces; raise it to ≥4.5:1 */
+:root {
+  --legal-text-dim: #8592a8;
+}
+
+/* Keyboard: skip link to the main content (visible only when focused) */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 1000;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: var(--legal-gold-primary);
+  color: var(--legal-navy-950);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 10px;
+  outline: 2px solid var(--legal-text-ivory);
+  outline-offset: 2px;
+}
+.skip-target:focus {
+  outline: none;
+}
+
+/* Focus: selects whose base styles remove the outline get a visible keyboard ring */
+.jurisdiction-dropdown:focus-visible,
+.workspace-jurisdiction-select:focus-visible,
+.brand-group:focus-visible {
+  outline: 2px solid var(--legal-gold-light);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Typography floor: no informational text below 12px */
+.clause-chunk-badge,
+.scale-caption-sub,
+.preview-badge,
+.stage-label,
+.audit-step-tag,
+.audit-verbatim-tag,
+.connector-text,
+.dropzone-formats,
+.sample-meta,
+.btn-sample-draft,
+.drafter-field-sub {
+  font-size: 0.75rem;
+}
+
+/* Interactive targets: lift the smallest controls to a comfortable desktop size */
+.jurisdiction-dropdown {
+  min-height: 32px;
+}
+.btn-drafter-preset {
+  min-height: 36px;
+}
+.btn-sample-draft {
+  min-height: 32px;
+}
+.preview-demo-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+/* Touch devices: 44px minimum hit area for every control */
+@media (pointer: coarse) {
+  button,
+  select,
+  textarea,
+  [role="button"],
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+    min-height: 44px;
+  }
+  input[type="checkbox"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* Reduced motion: neutralise every transition / animation, not only the hero scale */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
