@@ -73,7 +73,7 @@ class BM25Retriever:
             val = (self.corpus_size - freq + 0.5) / (freq + 0.5) + 1.0
             self.idf[term] = math.log(max(val, 1e-6))
 
-    def retrieve(self, query: str, top_k: int = 5) -> List[ScoredChunk]:
+    def retrieve(self, query: str, top_k: int = 5, doc_id: Optional[str] = None) -> List[ScoredChunk]:
         if not self.chunks:
             return []
 
@@ -97,8 +97,13 @@ class BM25Retriever:
                 denominator = tf + self.k1 * (1.0 - self.b + self.b * (doc_len / self.avg_doc_len))
                 scores[idx] += term_idf * (numerator / denominator)
 
-        # Pair scores with chunks and rank
-        scored_pairs: List[Tuple[int, float]] = [(idx, scores[idx]) for idx in range(self.corpus_size)]
+        # Pair scores with chunks and filter by doc_id if requested
+        scored_pairs: List[Tuple[int, float]] = []
+        for idx in range(self.corpus_size):
+            if doc_id is not None and self.chunks[idx].doc_id != doc_id:
+                continue
+            scored_pairs.append((idx, scores[idx]))
+
         scored_pairs.sort(key=lambda x: x[1], reverse=True)
 
         results: List[ScoredChunk] = []

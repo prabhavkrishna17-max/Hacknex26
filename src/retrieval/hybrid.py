@@ -31,19 +31,19 @@ class HybridRetriever:
         self.bm25.index(chunks)
         self.dense.index(chunks)
 
-    def retrieve(self, query: str, top_k: int = 4) -> List[ScoredChunk]:
+    def retrieve(self, query: str, top_k: int = 4, doc_id: Optional[str] = None) -> List[ScoredChunk]:
         if not self.chunks:
             return []
 
         if self.mode == "bm25":
-            return self.bm25.retrieve(query, top_k=top_k)
+            return self.bm25.retrieve(query, top_k=top_k, doc_id=doc_id)
         elif self.mode == "dense":
-            return self.dense.retrieve(query, top_k=top_k)
+            return self.dense.retrieve(query, top_k=top_k, doc_id=doc_id)
 
         # Retrieve a broader pool from both models before fusion
         pool_size = max(top_k * 3, 10)
-        bm25_results = self.bm25.retrieve(query, top_k=pool_size)
-        dense_results = self.dense.retrieve(query, top_k=pool_size)
+        bm25_results = self.bm25.retrieve(query, top_k=pool_size, doc_id=doc_id)
+        dense_results = self.dense.retrieve(query, top_k=pool_size, doc_id=doc_id)
 
         if self.mode == "hybrid_linear":
             return self._linear_fusion(bm25_results, dense_results, top_k=top_k)

@@ -3,7 +3,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useMemo } from "react"
 
 const FIELD = 500
 const HALF = FIELD / 2
@@ -589,36 +589,47 @@ export default function CursorRingField(props: CursorRingFieldProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const hostRef = useRef<HTMLDivElement | null>(null)
 
-    const swatches = rawPoints.slice(0, MAX_COLORS).map(hexToRgb)
-    if (swatches.length === 0) swatches.push(hexToRgb(DEFAULT_COLORS[0]))
-    const flatColors = new Float32Array(MAX_COLORS * 3)
-    for (let i = 0; i < MAX_COLORS; i++) {
-        const c = swatches[Math.min(i, swatches.length - 1)]
-        flatColors[i * 3 + 0] = c[0]
-        flatColors[i * 3 + 1] = c[1]
-        flatColors[i * 3 + 2] = c[2]
-    }
+    const flatColors = useMemo(() => {
+        const sw = rawPoints.slice(0, MAX_COLORS).map(hexToRgb)
+        if (sw.length === 0) sw.push(hexToRgb(DEFAULT_COLORS[0]))
+        const arr = new Float32Array(MAX_COLORS * 3)
+        for (let i = 0; i < MAX_COLORS; i++) {
+            const c = sw[Math.min(i, sw.length - 1)]
+            arr[i * 3 + 0] = c[0]
+            arr[i * 3 + 1] = c[1]
+            arr[i * 3 + 2] = c[2]
+        }
+        return arr
+    }, [rawPoints])
+
+    const swatches = useMemo(() => {
+        const s = rawPoints.slice(0, MAX_COLORS).map(hexToRgb)
+        if (s.length === 0) s.push(hexToRgb(DEFAULT_COLORS[0]))
+        return s
+    }, [rawPoints])
 
     const live = useRef<any>({})
-    live.current = {
-        colors: flatColors,
-        colorCount: swatches.length,
-        dotSize: dotSize / 100,
-        speed: speed / 50,
-        camDist: cameraDistance / 100,
-        ringRadius: ringRadius / 100,
-        ringWidth: Math.max(ringWidth, 1) / 100,
-        ringEdge: RING_EDGE / 100,
-        push: ringPush / 100,
-        turb: turbulence / 100,
-    }
-
     const densityRef = useRef(density)
     const densityDirty = useRef(true)
-    if (densityRef.current !== density) {
-        densityRef.current = density
-        densityDirty.current = true
-    }
+
+    useEffect(() => {
+        live.current = {
+            colors: flatColors,
+            colorCount: swatches.length,
+            dotSize: dotSize / 100,
+            speed: speed / 50,
+            camDist: cameraDistance / 100,
+            ringRadius: ringRadius / 100,
+            ringWidth: Math.max(ringWidth, 1) / 100,
+            ringEdge: RING_EDGE / 100,
+            push: ringPush / 100,
+            turb: turbulence / 100,
+        }
+        if (densityRef.current !== density) {
+            densityRef.current = density
+            densityDirty.current = true
+        }
+    }, [flatColors, swatches.length, dotSize, speed, cameraDistance, ringRadius, ringWidth, ringPush, turbulence, density])
 
     useEffect(() => {
         const canvas = canvasRef.current

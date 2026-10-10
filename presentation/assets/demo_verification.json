@@ -1,0 +1,213 @@
+{
+  "timestamp": "2026-10-09T10:12:32",
+  "upload": {
+    "status": "success",
+    "document": {
+      "id": "UNSEEN-LOGISTICS-001",
+      "title": "Commercial Logistics and Cold-Chain Master Agreement",
+      "filename": "demo_contract.md",
+      "jurisdiction": "United States",
+      "sections": 16,
+      "total_chars": 2145,
+      "chunks_indexed": 7,
+      "total_pages": null
+    }
+  },
+  "answers": [
+    {
+      "question": "What is the standard delivery window for freight consignments?",
+      "seconds": 1.4,
+      "evidence_state": "SUPPORTED",
+      "is_abstention": false,
+      "generated_by": "extractive_fallback",
+      "answer_text": "2.1 For standard freight consignments, Service Provider shall effect delivery within forty-eight (48) hours of dispatch notification. [UNSEEN-LOGISTICS-001#c003] 2.3 Notwithstanding Section 2.2, for all consignments designated as Temperature Sensitive Goods, Service Provider warrants continuous active monitoring and shall remain strictly liable for consignment spoilage exceeding four (4) hours beyond the scheduled delivery window regardless of customs detention. [UNSEEN-LOGISTICS-001#c004] 3.1 Client shall remit undisputed invoice amounts within thirty (30) calendar days from receipt of a valid electronic invoice. [UNSEEN-LOGISTICS-001#c005]",
+      "abstention_reason": null,
+      "citations": [
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c003",
+          "quote_snippet": "2.1 For standard freight consignments, Service Provider shall effect delivery within forty-eight (48) hours of dispatch notification.",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        },
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c004",
+          "quote_snippet": "2.3 Notwithstanding Section 2.2, for all consignments designated as Temperature Sensitive Goods, Service Provider warrants continuous active monitoring and shall remain strictly liable for consignment",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        },
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c005",
+          "quote_snippet": "3.1 Client shall remit undisputed invoice amounts within thirty (30) calendar days from receipt of a valid electronic invoice.",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        }
+      ],
+      "evidence_docs": [
+        "UNSEEN-LOGISTICS-001"
+      ],
+      "relationships": [
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "CARVEOUT",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "OVERRIDE",
+          "direction": "override"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        }
+      ]
+    },
+    {
+      "question": "What are the invoice payment terms and when does overdue interest apply?",
+      "seconds": 1.1,
+      "evidence_state": "SUPPORTED",
+      "is_abstention": false,
+      "generated_by": "extractive_fallback",
+      "answer_text": "Any amounts overdue by more than fifteen (15) days shall accrue interest at 1.25% per month. [UNSEEN-LOGISTICS-001#c005] 1.1 Service Provider shall manage cold-chain distribution across designated fulfillment centers for an initial term of twenty-four (24) months. [UNSEEN-LOGISTICS-001#c002]",
+      "abstention_reason": null,
+      "citations": [
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c005",
+          "quote_snippet": "Any amounts overdue by more than fifteen (15) days shall accrue interest at 1.25% per month.",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        },
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c002",
+          "quote_snippet": "1.1 Service Provider shall manage cold-chain distribution across designated fulfillment centers for an initial term of twenty-four (24) months.",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        }
+      ],
+      "evidence_docs": [
+        "UNSEEN-LOGISTICS-001"
+      ],
+      "relationships": [
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "CARVEOUT",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        }
+      ]
+    },
+    {
+      "question": "Is the service provider liable for spoilage of temperature sensitive goods when customs detention delays delivery?",
+      "seconds": 1.1,
+      "evidence_state": "SUPPORTED",
+      "is_abstention": false,
+      "generated_by": "extractive_fallback",
+      "answer_text": "2.3 Notwithstanding Section 2.2, for all consignments designated as Temperature Sensitive Goods, Service Provider warrants continuous active monitoring and shall remain strictly liable for consignment spoilage exceeding four (4) hours beyond the scheduled delivery window regardless of customs detention. [UNSEEN-LOGISTICS-001#c004] 2.2 Subject to Section 2.3, Service Provider shall not be liable for delivery delays attributable to port customs clearance operations. [UNSEEN-LOGISTICS-001#c003] 5.2 Special Cargo Liability: For Temperature Sensitive Goods, Service Provider shall be liable without cap for direct loss resulting from temperature excursions caused by refrigeration equipment failure. [UNSEEN-LOGISTICS-001#c007]",
+      "abstention_reason": null,
+      "citations": [
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c004",
+          "quote_snippet": "2.3 Notwithstanding Section 2.2, for all consignments designated as Temperature Sensitive Goods, Service Provider warrants continuous active monitoring and shall remain strictly liable for consignment",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        },
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c003",
+          "quote_snippet": "2.2 Subject to Section 2.3, Service Provider shall not be liable for delivery delays attributable to port customs clearance operations.",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        },
+        {
+          "chunk_id": "UNSEEN-LOGISTICS-001#c007",
+          "quote_snippet": "5.2 Special Cargo Liability: For Temperature Sensitive Goods, Service Provider shall be liable without cap for direct loss resulting from temperature excursions caused by refrigeration equipment failu",
+          "verified": true,
+          "verification_reason": "Verbatim substring match confirmed in source chunk"
+        }
+      ],
+      "evidence_docs": [
+        "UNSEEN-LOGISTICS-001"
+      ],
+      "relationships": [
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "OVERRIDE",
+          "direction": "override"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "CARVEOUT",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        }
+      ]
+    },
+    {
+      "question": "What are the aircraft hangar maintenance guidelines and hazardous chemical disposal protocols?",
+      "seconds": 0.7,
+      "evidence_state": "INSUFFICIENT",
+      "is_abstention": true,
+      "generated_by": null,
+      "answer_text": "The provided documents do not contain sufficient evidence to answer this inquiry. Specifically: Core subject matter 'aircraft hangar, aircraft hangar maintenance, hangar maintenance' is absent from the provided documents.",
+      "abstention_reason": "Core subject matter 'aircraft hangar, aircraft hangar maintenance, hangar maintenance' is absent from the provided documents.",
+      "citations": [],
+      "evidence_docs": [
+        "UNSEEN-LOGISTICS-001"
+      ],
+      "relationships": [
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "CARVEOUT",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2. Standard Service Levels and Delivery Window",
+          "referenced_section": "2.3",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "OVERRIDE",
+          "direction": "override"
+        },
+        {
+          "source_section": "Commercial Logistics and Cold-Chain Master Agreement > 2.3 Expedited Medical Exception and Temperature Guarantee",
+          "referenced_section": "2.2",
+          "relation": "REFERENCE",
+          "direction": "referenced"
+        }
+      ]
+    }
+  ]
+}

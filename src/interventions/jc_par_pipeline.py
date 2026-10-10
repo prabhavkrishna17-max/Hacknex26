@@ -45,13 +45,14 @@ class JCPARPipeline:
         query: str,
         selected_jurisdiction: Optional[str] = None,
         top_k: int = 4,
+        doc_id: Optional[str] = None,
     ) -> Tuple[List[ScoredChunk], Dict[str, Any]]:
-        """Executes retrieval with optional JARF and CPDE interventions."""
+        """Executes retrieval with optional JARF and CPDE interventions, optionally scoped to doc_id."""
         meta: Dict[str, Any] = {"expansions": [], "jurisdiction_routed": False}
 
         # Step 1: Base hybrid retrieval
         fetch_k = max(top_k * 2, 10) if (self.use_jarf or self.use_cpde) else top_k
-        candidates = self.base_pipeline.retrieve(query, top_k=fetch_k)
+        candidates = self.base_pipeline.retrieve(query, top_k=fetch_k, doc_id=doc_id)
 
         # Step 2: JARF intervention (if enabled)
         if self.use_jarf and selected_jurisdiction:
@@ -73,6 +74,7 @@ class JCPARPipeline:
         selected_jurisdiction: Optional[str] = None,
         question_id: Optional[str] = None,
         top_k: int = 4,
+        doc_id: Optional[str] = None,
     ) -> AnswerPayload:
         """Executes end-to-end question answering with all active interventions."""
         t0 = time.perf_counter()
@@ -80,7 +82,7 @@ class JCPARPipeline:
 
         # 1. Retrieval
         trace_log.append(f"Retrieving top {top_k} candidates for query.")
-        retrieved_chunks, ret_meta = self.retrieve(query, selected_jurisdiction=selected_jurisdiction, top_k=top_k)
+        retrieved_chunks, ret_meta = self.retrieve(query, selected_jurisdiction=selected_jurisdiction, top_k=top_k, doc_id=doc_id)
         ret_ms = (time.perf_counter() - t0) * 1000.0
 
         if ret_meta.get("jurisdiction_routed"):

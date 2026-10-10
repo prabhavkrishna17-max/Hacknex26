@@ -37,6 +37,7 @@ class BaselineRAGPipeline:
         self.bm25 = BM25Retriever(k1=self.config.bm25_k1, b=self.config.bm25_b)
         self.embedder = DenseVectorEmbedder(
             api_key=self.config.gemini_api_key,
+            api_keys=getattr(self.config, "gemini_api_keys", None),
             model_name=self.config.gemini_embedding_model,
             strict=self.config.strict_providers,
         )
@@ -83,10 +84,27 @@ class BaselineRAGPipeline:
         self.retriever.index(self.chunks)
         return self.chunks
 
-    def retrieve(self, query: str, top_k: Optional[int] = None) -> List[ScoredChunk]:
-        """Executes hybrid retrieval over indexed chunks."""
+    def add_document(self, document: Document) -> List[Chunk]:
+        """Dynamically ingests a single document, chunks it, and updates retriever indices."""
+        # Replace if doc_id already exists, otherwise append
+        self.documents = [d for d in self.documents if d.doc_id != document.doc_id]
+        self.documents.append(document)
+
+        # Chunk the new document
+        new_chunks = self.chunker.chunk_document(document)
+
+        # Update chunks list
+        self.chunks = [c for c in self.chunks if c.doc_id != document.doc_id]
+        self.chunks.extend(new_chunks)
+
+        # Update retriever index
+        self.retriever.index(self.chunks)
+        return new_chunks
+
+    def retrieve(self, query: str, top_k: Optional[int] = None, doc_id: Optional[str] = None) -> List[ScoredChunk]:
+        """Executes hybrid retrieval over indexed chunks, optionally scoped to a doc_id."""
         k = top_k or self.config.top_k
-        return self.retriever.retrieve(query, top_k=k)
+        return self.retriever.retrieve(query, top_k=k, doc_id=doc_id)
 
     def generate(
         self,
@@ -112,12 +130,13 @@ class BaselineRAGPipeline:
         question_id: Optional[str] = None,
         top_k: Optional[int] = None,
         jurisdiction_context: Optional[str] = None,
+        doc_id: Optional[str] = None,
     ) -> AnswerPayload:
         """Executes full end-to-end question answering pipeline."""
         t_start = time.perf_counter()
 
         t_ret_start = time.perf_counter()
-        retrieved = self.retrieve(query, top_k=top_k)
+        retrieved = self.retrieve(query, top_k=top_k, doc_id=doc_id)
         retrieval_ms = (time.perf_counter() - t_ret_start) * 1000.0
 
         answer = self.generate(

@@ -90,14 +90,14 @@ class EvaluationMetrics:
             matches = sum(1 for t in significant_tokens if t in chunk_text_lower)
             match_ratio = matches / len(significant_tokens)
 
-            # A claim is verified grounded if verbatim quote exists in chunk or strong entailment match
-            if has_verbatim:
+            # A claim is verified grounded only if verbatim quote exists in chunk AND claim itself is supported by chunk text
+            if has_verbatim and match_ratio >= 0.40:
                 grounded_claims += 1
-            elif match_ratio >= 0.50:
+            elif not has_verbatim and match_ratio >= 0.65:
                 grounded_claims += 1
             else:
                 unsupported_claims += 1
-                if match_ratio < 0.15:
+                if match_ratio < 0.20:
                     fabricated_citations += 1
 
         groundedness = grounded_claims / total_citations if total_citations > 0 else 0.0

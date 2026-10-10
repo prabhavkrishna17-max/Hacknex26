@@ -27,16 +27,19 @@ class DenseVectorEmbedder:
         self,
         dimension: int = 128,
         api_key: Optional[str] = None,
+        api_keys: Optional[List[str]] = None,
         model_name: str = "gemini-embedding-001",
         strict: bool = False,
-        max_retries: int = 4,
+        max_retries: int = 2,
     ):
         self.dimension = dimension
-        self.api_key = api_key
+        self.api_keys = [k for k in (api_keys or ([api_key] if api_key else [])) if k and len(k) > 5]
+        self._key_index = 0
+        self.api_key = self.api_keys[0] if self.api_keys else (api_key or "")
         self.model_name = model_name
         self.strict = strict
         self.max_retries = max_retries
-        self.use_api = bool(api_key and len(api_key) > 5)
+        self.use_api = bool(self.api_key and len(self.api_key) > 5)
         self._client = None
         self.api_dimension: Optional[int] = None
 
@@ -54,29 +57,51 @@ class DenseVectorEmbedder:
         from google import genai
         from google.genai import types
 
-        if self._client is None:
-            self._client = genai.Client(api_key=self.api_key)
-
         vectors: List[np.ndarray] = []
         for i in range(0, len(texts), self.API_BATCH_SIZE):
             batch = texts[i:i + self.API_BATCH_SIZE]
-            last_err: Optional[Exception] = None
-            for attempt in range(self.max_retries):
+            batch_success = False
+
+            while not batch_success and self.use_api:
+                if self._client is None:
+                    self._client = genai.Client(api_key=self.api_key)
+
                 try:
                     resp = self._client.models.embed_content(
                         model=self.model_name,
                         contents=batch,
                         config=types.EmbedContentConfig(task_type=task_type),
                     )
-                    break
+                    vectors.extend(np.asarray(e.values, dtype=np.float32) for e in resp.embeddings)
+                    batch_success = True
                 except Exception as e:
-                    last_err = e
-                    wait = 2 ** attempt * 2
-                    logger.warning(f"Gemini embed_content failed (attempt {attempt + 1}/{self.max_retries}): {e}; retrying in {wait}s")
-                    time.sleep(wait)
-            else:
-                raise RuntimeError(f"Gemini embed_content failed after {self.max_retries} attempts: {last_err}")
-            vectors.extend(np.asarray(e.values, dtype=np.float32) for e in resp.embeddings)
+                    err_str = str(e)
+                    is_quota = "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "Quota exceeded" in err_str
+                    is_auth = "401" in err_str or "403" in err_str or "API_KEY_INVALID" in err_str or "invalid" in err_str.lower()
+
+                    if is_quota or is_auth:
+                        logger.warning(
+                            f"Gemini embedding key (index {self._key_index}) failed with {'quota exhaustion (429)' if is_quota else 'auth error'}. Checking alternate configured keys."
+                        )
+                        # Try next configured key without long sleeping
+                        if self._key_index + 1 < len(self.api_keys):
+                            self._key_index += 1
+                            self.api_key = self.api_keys[self._key_index]
+                            self._client = None
+                            logger.info(f"Switched to alternate configured Gemini key index {self._key_index}")
+                            continue
+                        else:
+                            # All keys exhausted or no alternate keys
+                            self._disable_api(e)
+                            break
+                    else:
+                        # Transient or unknown error: do not sleep indefinitely
+                        logger.warning(f"Gemini embed_content error: {type(e).__name__}; disabling API to preserve responsiveness.")
+                        self._disable_api(e)
+                        break
+
+            if not batch_success:
+                raise RuntimeError("Remote embedding failed or quota exhausted; fallback to local LSA.")
 
         mat = np.vstack(vectors)
         self.api_dimension = int(mat.shape[1])
@@ -86,7 +111,7 @@ class DenseVectorEmbedder:
     def _disable_api(self, err: Exception) -> None:
         if self.strict:
             raise err
-        logger.warning(f"Gemini embeddings unavailable, switching embedder to local LSA: {err}")
+        logger.warning(f"Gemini embeddings unavailable, fast-switching embedder to local LSA: {type(err).__name__}")
         self.use_api = False
 
     def fit_local_semantic_space(self, corpus_texts: List[str]) -> None:
@@ -195,6 +220,7 @@ class DenseRetriever:
         self.chunks: List[Chunk] = []
         self.chunk_embeddings: Optional[np.ndarray] = None
         self._indexed_backend: Optional[str] = None
+        self._embedding_cache: Dict[str, np.ndarray] = {}
 
     def index(self, chunks: List[Chunk]) -> None:
         self.chunks = list(chunks)
@@ -206,37 +232,65 @@ class DenseRetriever:
             f"{' '.join(c.heading_path)} {c.section_heading} {c.text}"
             for c in chunks
         ]
-        # Fit semantic space over all corpus chunks
-        self.embedder.fit_local_semantic_space(texts)
-        self.chunk_embeddings = self.embedder.embed_batch(texts)
+
+        # Check which chunks need new embeddings
+        uncached_indices = [i for i, c in enumerate(chunks) if c.chunk_id not in self._embedding_cache]
+
+        if not self._embedding_cache:
+            # First index run: fit semantic space and embed all
+            self.embedder.fit_local_semantic_space(texts)
+            embeddings = self.embedder.embed_batch(texts)
+            for i, c in enumerate(chunks):
+                self._embedding_cache[c.chunk_id] = embeddings[i]
+        elif uncached_indices:
+            # Incremental index run: embed only new chunks
+            uncached_texts = [texts[i] for i in uncached_indices]
+            new_embeddings = self.embedder.embed_batch(uncached_texts)
+            for local_idx, orig_idx in enumerate(uncached_indices):
+                self._embedding_cache[chunks[orig_idx].chunk_id] = new_embeddings[local_idx]
+
+        # Assemble full matrix in chunk order
+        self.chunk_embeddings = np.vstack([self._embedding_cache[c.chunk_id] for c in chunks])
         self._indexed_backend = self.embedder.active_backend
 
-    def retrieve(self, query: str, top_k: int = 5) -> List[ScoredChunk]:
+    def retrieve(self, query: str, top_k: int = 5, doc_id: Optional[str] = None) -> List[ScoredChunk]:
         if not self.chunks or self.chunk_embeddings is None:
             return []
 
         query_vec = self.embedder.embed_query(query)
         if self.embedder.active_backend != self._indexed_backend:
             # Embedder degraded after indexing (non-strict mode): rebuild index in the same space.
+            self._embedding_cache.clear()
             self.index(self.chunks)
             query_vec = self.embedder.embed_query(query)
         q_norm = np.linalg.norm(query_vec)
         if q_norm < 1e-10:
             return []
 
-        # Cosine similarity over normalized vectors
-        scores = np.dot(self.chunk_embeddings, query_vec)
-
-        k = min(top_k, len(self.chunks))
-        top_indices = np.argsort(scores)[::-1][:k]
+        # Filter indices by doc_id if specified
+        if doc_id is not None:
+            candidate_indices = [i for i, c in enumerate(self.chunks) if c.doc_id == doc_id]
+            if not candidate_indices:
+                return []
+            candidate_embeddings = self.chunk_embeddings[candidate_indices]
+            scores = np.dot(candidate_embeddings, query_vec)
+            k = min(top_k, len(candidate_indices))
+            sorted_order = np.argsort(scores)[::-1][:k]
+            top_indices = [candidate_indices[idx] for idx in sorted_order]
+            top_scores = scores[sorted_order]
+        else:
+            scores = np.dot(self.chunk_embeddings, query_vec)
+            k = min(top_k, len(self.chunks))
+            top_indices = np.argsort(scores)[::-1][:k]
+            top_scores = scores[top_indices]
 
         results = []
-        for rank, idx in enumerate(top_indices, start=1):
+        for rank, (idx, score) in enumerate(zip(top_indices, top_scores), start=1):
             results.append(
                 ScoredChunk(
                     chunk=self.chunks[idx],
-                    score=float(scores[idx]),
-                    dense_score=float(scores[idx]),
+                    score=float(score),
+                    dense_score=float(score),
                     lexical_score=None,
                     rank=rank,
                 )

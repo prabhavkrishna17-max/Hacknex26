@@ -29,6 +29,7 @@ class Chunk(BaseModel):
     char_start: int
     char_end: int
     token_count: int
+    page: Optional[int] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def context_repr(self) -> str:

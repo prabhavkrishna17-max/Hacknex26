@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List
 
 
 def _load_env_file() -> None:
@@ -54,6 +55,10 @@ class BaselineConfig:
     gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-3.5-flash"))
     gemini_embedding_model: str = field(default_factory=lambda: os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001"))
     gemini_api_key: str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", ""))
+    gemini_api_keys: List[str] = field(default_factory=lambda: [
+        v for k in ["GEMINI_API_KEY", "GEMINI_API_KEY2", "GEMINI_API_KEY3", "GEMINI_API_KEY4"]
+        if (v := os.getenv(k, "").strip())
+    ])
     temperature: float = 0.0
     max_tokens: int = 4096  # headroom for thinking tokens, which count against the output limit
 

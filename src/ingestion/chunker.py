@@ -25,12 +25,25 @@ class MetadataPreservingChunker:
         current_lines: List[str] = []
         section_char_start: int = 0
         current_offset: int = 0
+        current_page: Optional[int] = document.metadata.get("total_pages", None) and 1
 
-        header_regex = re.compile(r"^(#{1,6})\s+(.*)$")
+        md_header_regex = re.compile(r"^(#{1,6})\s+(.*)$")
+        legal_header_regex = re.compile(r"^((?:Section|Clause|Article)\s+[0-9IVX]+(?:\.[0-9]+)*[.:]?\s+.*)$", re.IGNORECASE)
+        page_regex = re.compile(r"^---\s*Page\s+(\d+)\s*---$", re.IGNORECASE)
 
         for line in lines:
-            header_match = header_regex.match(line.strip())
-            if header_match:
+            trimmed = line.strip()
+
+            page_match = page_regex.match(trimmed)
+            if page_match:
+                current_page = int(page_match.group(1))
+                current_offset += len(line)
+                continue
+
+            md_match = md_header_regex.match(trimmed)
+            legal_match = legal_header_regex.match(trimmed) if not md_match else None
+
+            if md_match or legal_match:
                 # Flush previous section if any content accumulated
                 section_text = "".join(current_lines).strip()
                 if section_text:
@@ -40,19 +53,22 @@ class MetadataPreservingChunker:
                         "text": section_text,
                         "char_start": section_char_start,
                         "char_end": section_char_start + len("".join(current_lines)),
+                        "page": current_page,
                     })
 
-                level = len(header_match.group(1))
-                heading_title = header_match.group(2).strip()
-
-                # Adjust heading path based on depth
-                if level == 1:
-                    current_heading_path = [heading_title]
-                elif level == 2:
+                if md_match:
+                    level = len(md_match.group(1))
+                    heading_title = md_match.group(2).strip()
+                    if level == 1:
+                        current_heading_path = [heading_title]
+                    elif level == 2:
+                        current_heading_path = [current_heading_path[0] if current_heading_path else document.title, heading_title]
+                    elif level >= 3:
+                        base = current_heading_path[:2] if len(current_heading_path) >= 2 else [document.title]
+                        current_heading_path = base + [heading_title]
+                else:
+                    heading_title = legal_match.group(1).strip()
                     current_heading_path = [current_heading_path[0] if current_heading_path else document.title, heading_title]
-                elif level >= 3:
-                    base = current_heading_path[:2] if len(current_heading_path) >= 2 else [document.title]
-                    current_heading_path = base + [heading_title]
 
                 current_section_heading = heading_title
                 current_lines = [line]
@@ -72,6 +88,7 @@ class MetadataPreservingChunker:
                     "text": section_text,
                     "char_start": section_char_start,
                     "char_end": current_offset,
+                    "page": current_page,
                 })
 
         # Sub-chunk sections if they exceed target_chunk_chars
@@ -81,6 +98,7 @@ class MetadataPreservingChunker:
         for sec in sections:
             sec_text = sec["text"]
             sec_start = sec["char_start"]
+            sec_page = sec.get("page")
 
             if len(sec_text) <= self.target_chunk_chars:
                 token_count = len(sec_text.split())
@@ -95,6 +113,7 @@ class MetadataPreservingChunker:
                     char_start=sec_start,
                     char_end=sec_start + len(sec_text),
                     token_count=token_count,
+                    page=sec_page,
                     metadata=dict(document.metadata),
                 ))
                 chunk_counter += 1
@@ -124,6 +143,7 @@ class MetadataPreservingChunker:
                             char_start=buf_start,
                             char_end=buf_start + len(buffer),
                             token_count=token_count,
+                            page=sec_page,
                             metadata=dict(document.metadata),
                         ))
                         chunk_counter += 1
@@ -155,6 +175,7 @@ class MetadataPreservingChunker:
                         char_start=buf_start,
                         char_end=buf_start + len(buffer),
                         token_count=token_count,
+                        page=sec_page,
                         metadata=dict(document.metadata),
                     ))
                     chunk_counter += 1

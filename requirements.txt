@@ -1,5 +1,10 @@
-# HNX26EPS01 baseline (Python 3.13)
+# HNX26EPS01 backend (Python 3.13)
 numpy==2.3.1
 scikit-learn==1.9.1
 pydantic==2.13.5
 google-genai==2.29.0
+# API server, uploads and PDF ingestion
+fastapi==0.121.3
+uvicorn==0.38.0
+python-multipart==0.0.20
+pypdf==6.19.0

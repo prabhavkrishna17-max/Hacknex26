@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Proprietary helper copied from Anthropic's pptx skill — not redistributable
+lib/apply_theme.js
+
+# Local render output
+renders/
