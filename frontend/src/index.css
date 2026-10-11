@@ -3900,3 +3900,341 @@ html, body, * {
   gap: 22px;
 }
 
+/* ==========================================================================
+   DEDICATED LEGAL DRAFTING PAGE STYLES
+   ========================================================================== */
+
+.drafting-view-root {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 36px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.drafting-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-bottom: 1px solid var(--legal-gold-border);
+  padding-bottom: 24px;
+}
+
+.drafting-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.drafting-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drafting-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.drafting-crest-icon {
+  color: #c5a059;
+  width: 32px;
+  height: 32px;
+}
+
+.drafting-page-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--legal-text-ivory);
+  letter-spacing: -0.01em;
+}
+
+.drafting-page-subtitle {
+  margin: 0;
+  font-size: 0.96rem;
+  color: var(--legal-text-secondary);
+  line-height: 1.5;
+  max-width: 780px;
+}
+
+.drafting-warning-callout {
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-left: 4px solid #f59e0b;
+  border-radius: 6px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.drafting-warning-callout .warning-icon {
+  color: #fbbf24;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.drafting-warning-text {
+  font-size: 0.86rem;
+  color: #fef3c7;
+  line-height: 1.5;
+}
+
+/* Document Type Selector Tabs */
+.doctype-selector-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doctype-selector-label {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--legal-gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.doctype-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.doctype-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  color: var(--legal-text-ivory);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.doctype-pill.active {
+  background: rgba(197, 160, 89, 0.16);
+  border-color: #dfbe7c;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(197, 160, 89, 0.25);
+}
+
+.doctype-pill.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.doctype-pill .coming-soon-badge {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Source Document & Jurisdiction Control Bar */
+.drafting-context-bar {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-radius: 8px;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.context-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.context-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.context-field-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--legal-gold-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.context-select {
+  background: var(--surface-inset);
+  border: 1px solid var(--surface-card-border);
+  color: var(--legal-text-ivory);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.context-select:focus {
+  border-color: var(--legal-gold-primary);
+}
+
+.preset-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Two-Column Form and Evidence Layout */
+.drafting-workspace-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .drafting-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.drafting-form-container {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.form-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+.form-section-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.22rem;
+  color: var(--legal-text-ivory);
+}
+
+.evidence-side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.evidence-status-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-card-border);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evidence-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+.evidence-status-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--legal-gold-primary);
+}
+
+.evidence-clauses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.evidence-empty-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--legal-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.evidence-gap-card {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evidence-gap-title {
+  color: #f87171;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evidence-gap-text {
+  color: #fca5a5;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* Full Width Output Section on Drafting Page */
+.drafting-output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
